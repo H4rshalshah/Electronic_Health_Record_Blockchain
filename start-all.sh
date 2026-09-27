@@ -70,6 +70,16 @@ find ./orgs/pharmacy -type f -name "registerAdmin.js" -exec sed -i "s|/home/anki
 echo "Environment templates copied and dynamic paths resolved to $PWD."
 
 # ─────────────────────────────────────────────────────────────
+# STEP 2.5: Deep Clean Windows Artifacts
+# ─────────────────────────────────────────────────────────────
+echo ""
+echo "============================================================"
+echo " 2.5 Cleaning Host Caches (Fixing npm cross-platform bugs)"
+echo "============================================================"
+find . -type f -name "package-lock.json" -delete 2>/dev/null || true
+find . -type d -name "node_modules" -prune -exec rm -rf {} + 2>/dev/null || true
+echo "  ✅ Cleared local node_modules & lockfiles to prevent Docker contamination."
+
 # STEP 3: Start Blockchain Networks (requires Fabric binaries)
 # ─────────────────────────────────────────────────────────────
 echo ""
