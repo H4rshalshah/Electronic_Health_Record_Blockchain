@@ -37,7 +37,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4006:4006"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   h-peer0-api:
@@ -51,7 +51,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4001:4001"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   h-peer1-api:
@@ -65,7 +65,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4002:4002"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   h-peer2-api:
@@ -79,7 +79,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4003:4003"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   h-extorg-api:
@@ -93,7 +93,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4004:4004"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   h-patient-api:
@@ -107,7 +107,7 @@ services:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4005:4005"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ services:
       - h-hospital-portal-modules:/app/node_modules
     ports:
       - "5173:5173"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     restart: unless-stopped
 
   h-patient-portal:
@@ -136,7 +136,7 @@ services:
       - h-patient-portal-modules:/app/node_modules
     ports:
       - "5174:5174"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5174"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 5174"
     restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ services:
       - p-backend-modules:/app/node_modules
     ports:
       - "3000:3000"
-    command: /bin/sh -c "npm install && npm start"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm start"
     restart: unless-stopped
 
   p-manager:
@@ -165,7 +165,7 @@ services:
       - p-manager-modules:/app/node_modules
     ports:
       - "3001:3001"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3001"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 3001"
     restart: unless-stopped
 
   p-employee:
@@ -178,7 +178,7 @@ services:
       - p-employee-modules:/app/node_modules
     ports:
       - "3002:3002"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3002"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 3002"
     restart: unless-stopped
 
   p-inventory:
@@ -191,7 +191,7 @@ services:
       - p-inventory-modules:/app/node_modules
     ports:
       - "3003:3003"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3003"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 3003"
     restart: unless-stopped
 
   p-patient:
@@ -204,7 +204,7 @@ services:
       - p-patient-modules:/app/node_modules
     ports:
       - "3004:3004"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3004"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 3004"
     restart: unless-stopped
 
   p-billing:
@@ -217,7 +217,7 @@ services:
       - p-billing-modules:/app/node_modules
     ports:
       - "3005:3005"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3005"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 3005"
     restart: unless-stopped
 
   p-frontend:
@@ -230,7 +230,7 @@ services:
       - p-frontend-modules:/app/node_modules
     ports:
       - "5175:5175"
-    command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5175"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run dev -- --host 0.0.0.0 --port 5175"
     restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
@@ -246,7 +246,7 @@ services:
       - l-node-gateway-modules:/app/node_modules
     ports:
       - "3006:3000"
-    command: /bin/sh -c "npm install && npm run web"
+    command: /bin/sh -c "rm -f package-lock.json && npm install && npm run web"
     restart: unless-stopped
 
 # ──────────────────────────────────────────────────────────
@@ -271,3 +271,4 @@ volumes:
   p-billing-modules:
   p-frontend-modules:
   l-node-gateway-modules:
+
