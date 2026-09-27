@@ -1,10 +1,6 @@
-version: '3.8'
-
-x-node-service: &node-service
-  image: node:22-alpine
-  restart: unless-stopped
 
 services:
+
 
   # ──────────────────────────────────────────────────────────
   # NGINX — Single entry point (port 80)
@@ -37,10 +33,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/ipfs-service:/app
-      - /app/node_modules
+      - h-ipfs-service-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4006:4006"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   h-peer0-api:
@@ -50,11 +47,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer0-api:/app
-      - /app/node_modules
-        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
+      - h-peer0-api-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4001:4001"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   h-peer1-api:
@@ -64,11 +61,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer1-api:/app
-      - /app/node_modules
-        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
+      - h-peer1-api-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4002:4002"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   h-peer2-api:
@@ -78,11 +75,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer2-api:/app
-      - /app/node_modules
-        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
+      - h-peer2-api-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4003:4003"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   h-extorg-api:
@@ -92,11 +89,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/extorg-api:/app
-      - /app/node_modules
-        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
+      - h-extorg-api-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4004:4004"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   h-patient-api:
@@ -106,11 +103,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/patient-api:/app
-      - /app/node_modules
-        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
+      - h-patient-api-modules:/app/node_modules
+      - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4005:4005"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
@@ -123,10 +120,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-frontend-v2/hospital-portal:/app
-      - /app/node_modules
+      - h-hospital-portal-modules:/app/node_modules
     ports:
       - "5173:5173"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
 
   h-patient-portal:
     image: ghcr.io/devbyhimans/ehr-h-patient-portal:latest
@@ -135,10 +133,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-frontend-v2/patient-portal:/app
-      - /app/node_modules
+      - h-patient-portal-modules:/app/node_modules
     ports:
       - "5174:5174"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5174"
+    restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
   # PHARMACY ORG
@@ -150,10 +149,10 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/backend:/app
-      - /app/node_modules
+      - p-backend-modules:/app/node_modules
     ports:
       - "3000:3000"
-    command: npm start
+    command: /bin/sh -c "npm install && npm start"
     restart: unless-stopped
 
   p-manager:
@@ -163,10 +162,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/manager:/app
-      - /app/node_modules
+      - p-manager-modules:/app/node_modules
     ports:
       - "3001:3001"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3001"
+    restart: unless-stopped
 
   p-employee:
     image: ghcr.io/devbyhimans/ehr-p-employee:latest
@@ -175,10 +175,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/employee:/app
-      - /app/node_modules
+      - p-employee-modules:/app/node_modules
     ports:
       - "3002:3002"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3002"
+    restart: unless-stopped
 
   p-inventory:
     image: ghcr.io/devbyhimans/ehr-p-inventory:latest
@@ -187,10 +188,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/inventory:/app
-      - /app/node_modules
+      - p-inventory-modules:/app/node_modules
     ports:
       - "3003:3003"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3003"
+    restart: unless-stopped
 
   p-patient:
     image: ghcr.io/devbyhimans/ehr-p-patient:latest
@@ -199,10 +201,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/patient:/app
-      - /app/node_modules
+      - p-patient-modules:/app/node_modules
     ports:
       - "3004:3004"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3004"
+    restart: unless-stopped
 
   p-billing:
     image: ghcr.io/devbyhimans/ehr-p-billing:latest
@@ -211,10 +214,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/billing:/app
-      - /app/node_modules
+      - p-billing-modules:/app/node_modules
     ports:
       - "3005:3005"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3005"
+    restart: unless-stopped
 
   p-frontend:
     image: ghcr.io/devbyhimans/ehr-p-frontend:latest
@@ -223,10 +227,11 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/pharmacy/fabric-network-swarm/app/frontend:/app
-      - /app/node_modules
+      - p-frontend-modules:/app/node_modules
     ports:
       - "5175:5175"
     command: /bin/sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5175"
+    restart: unless-stopped
 
   # ──────────────────────────────────────────────────────────
   # LAB ORG
@@ -238,15 +243,16 @@ services:
     working_dir: /app
     volumes:
       - ./orgs/lab/EHR-LABORG-main/client/node-gateway:/app
-      - /app/node_modules
+      - l-node-gateway-modules:/app/node_modules
     ports:
       - "3006:3000"
-    command: npm run web
+    command: /bin/sh -c "npm install && npm run web"
     restart: unless-stopped
 
 # ──────────────────────────────────────────────────────────
-# Named volumes — node_modules live here, never on host
-# Docker auto-populates these from the image on first run
+# Named volumes — node_modules live INSIDE Docker only
+# These are NEVER shared with the host, preventing the
+# Windows/Linux cross-platform npm binary crash
 # ──────────────────────────────────────────────────────────
 volumes:
   h-ipfs-service-modules:
