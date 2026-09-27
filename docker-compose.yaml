@@ -51,6 +51,7 @@ services:
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer0-api:/app
       - /app/node_modules
+        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4001:4001"
     command: npm start
@@ -64,6 +65,7 @@ services:
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer1-api:/app
       - /app/node_modules
+        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4002:4002"
     command: npm start
@@ -77,6 +79,7 @@ services:
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/peer2-api:/app
       - /app/node_modules
+        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4003:4003"
     command: npm start
@@ -90,6 +93,7 @@ services:
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/extorg-api:/app
       - /app/node_modules
+        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4004:4004"
     command: npm start
@@ -103,6 +107,7 @@ services:
     volumes:
       - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/patient-api:/app
       - /app/node_modules
+        - ./orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/shared:/shared
     ports:
       - "4005:4005"
     command: npm start
