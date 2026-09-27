@@ -8,63 +8,73 @@ The **Blockchain Electronic Health Record (EHR) System** is an enterprise-grade,
 
 It connects independent healthcare stakeholders (Hospital, Pharmacy, Lab, and Digilocker) into a single, unified Hyperledger Fabric blockchain network. The system strictly enforces Attribute-Based Access Control (ABAC) and Patient Sovereignty, meaning patients cryptographically own their data and clinicians cannot view patient records without explicit on-chain consent grants. 
 
-Heavy clinical documents (like PDFs) are stored off-chain on IPFS, with only lightweight cryptographic hashes and metadata anchored on the ledger. LLM-powered autonomous agents (Gemini) are integrated to parse unstructured data and provide clinical decision support.
+## Quickstart Setup for Team Members 🚀 (Zero Dependency Hell)
 
-## Architecture
+We have fully dockerized this project using **GitHub Container Registry (GHCR)**. 
+**You do NOT need to install Node.js or run `npm install`.** Dependencies are baked directly into pre-built cloud images, and everything routes cleanly through a single Nginx entry point.
 
-For a detailed view of the system's architecture, flowcharts, and technical stack, please refer to:
-- [Comprehensive System Overview](docs/system-overview.md) *(Start here!)*
-- [Architecture Documentation](docs/architecture.md)
-- [Implementation Roadmap](docs/roadmap.md)
+### Step 1: Open Docker
+Before doing anything, open your start menu, search for **Docker Desktop**, and open it. Wait for the icon to turn green (Engine Running).
 
-## Prerequisites
+### Step 2: Download the Code & Fabric Binaries
+Open a terminal in the project root. (Windows users: open a WSL Ubuntu terminal or Git Bash. Do not use standard PowerShell/CMD if possible).
 
-- **OS:** Ubuntu 22.04 LTS (recommended), macOS, or Windows with WSL2/Docker Desktop.
-- **Tools:** Docker v24.0+, Docker Compose v2.20+, Node.js v18.x LTS, Git, cURL, jq
-- **Fabric Binaries:** Hyperledger Fabric v2.5.x binaries
+Make sure your Fabric Binaries are installed per the setup guide. Then run the orchestrator script to initialize the blockchain networks:
+```bash
+bash start-all.sh
+```
 
-## Quickstart (Running the Entire Network)
+### Step 3: Pull the Pre-Built Images & Run
+```bash
+# Pull the latest dependencies/images from GitHub (fast!)
+docker compose pull
 
-The entire federated network (Hospital, Pharmacy, Lab) and all 14 associated Node.js frontend/backend applications have been fully Dockerized for a simple, one-click startup experience.
+# Start everything in the background
+docker compose up -d
+```
 
-To run the entire project on your local machine:
+### Step 4: Access the System
+Everything is now unified under a single localhost port. **Do not use ports like :5173 or :3001 anymore.**
+Open these links directly in your browser:
 
-> [!IMPORTANT]
-> **Before you begin:**
-> 1. **Open Docker:** Ensure Docker Desktop is running. (Windows users: ensure WSL integration is enabled).
-> 2. **Open the right Terminal:** Windows users **must** open an Ubuntu WSL terminal to run these commands. Standard CMD/PowerShell will fail. macOS/Linux users can use their native Terminal.
+* **Hospital Reception UI:** [http://localhost/](http://localhost/)
+* **Hospital Patient UI:** [http://localhost/patient/](http://localhost/patient/)
+* **Pharmacy Main UI:** [http://localhost/pharmacy/](http://localhost/pharmacy/)
+* **Pharmacy Manager UI:** [http://localhost/pharmacy/manager/](http://localhost/pharmacy/manager/)
+* **Pharmacy Employee UI:** [http://localhost/pharmacy/employee/](http://localhost/pharmacy/employee/)
+* **Pharmacy Patient UI:** [http://localhost/pharmacy/patient/](http://localhost/pharmacy/patient/)
+* **Pharmacy Billing UI:** [http://localhost/pharmacy/billing/](http://localhost/pharmacy/billing/)
+* **Pharmacy Inventory UI:** [http://localhost/pharmacy/inventory/](http://localhost/pharmacy/inventory/)
+* **Lab Gateway UI:** [http://localhost/lab/](http://localhost/lab/)
 
-1. **Download Fabric Binaries:** Ensure you have the Hyperledger Fabric binaries downloaded. If you don't have them, refer to the [Setup Guide](docs/setup-guide.md) to download them into your local cache.
-2. **Launch Orchestrator:** From the root of this repository, run the orchestrator script:
-   ```bash
-   bash start-all.sh
-   ```
-   *This script automatically sets up environment variables, launches all three Fabric blockchain networks, and starts the applications using Docker Compose.*
+*(Note: API backend endpoints are also routed via `http://localhost/api/hospital/` and `http://localhost/api/pharmacy/`)*
 
-3. **Access the Applications:** Once the orchestrator finishes, you can access the portals directly from your host browser:
-   * **Hospital UIs:** `http://localhost:5173` (Reception) | `http://localhost:5174` (Patient)
-   * **Pharmacy UIs:** `http://localhost:3001` through `3005`
-   * **Lab Gateway:** `http://localhost:3006`
+---
 
-### Running Individual Organizations
+## 🛠 For Developers: How to Work on the Project
 
-If you are a student group focusing **only on your specific module** and do not want to spin up the entire federated network, you can start just your organization in isolation. 
+### Modifying Code
+Your local folders (`orgs/hospital/`, `orgs/pharmacy/`, etc.) are actively "bind-mounted" into the running Docker containers. 
+- You can freely edit `.js`, `.jsx`, `.css` files in your code editor.
+- The browser will **auto-reload instantly** (Vite HMR is fully supported through Nginx).
 
-Detailed, step-by-step instructions for booting up each organization individually are available in the [Setup Guide](docs/setup-guide.md).
+### What if I add a new npm package?
+If you add a new package (e.g., modifying `package.json`), you **do not** need to manually push images!
+1. Just commit your `package.json` changes to the `main` branch on GitHub.
+2. Our **GitHub Actions CI/CD** will automatically detect it and rebuild the cloud images.
+3. Tell your teammates to run `docker compose pull && docker compose up -d` to sync up.
 
-* **Hospital Org Codebase:** `orgs/hospital/`
-* **Pharmacy Org Codebase:** `orgs/pharmacy/`
-* **Lab Org Codebase:** `orgs/lab/`
+---
 
 ## Module Ownership Table
+We are a team of 18 dividing the work across modules:
 
-The project has been divided among multiple groups. The table below outlines module assignments.
+| Module | Location |
+| :--- | :--- |
+| **Hospital Organization** | `orgs/hospital/` |
+| **Pharmacy Organization** | `orgs/pharmacy/` |
+| **Lab Organization** | `orgs/lab/` |
+| **Digilocker System** | `orgs/digilocker/` |
+| **Agentic AI Integration** | (Cross-module) |
 
-| Module | Location | Assigned Group |
-| :--- | :--- | :--- |
-| **Hospital Organization** | `orgs/hospital/` | TBD |
-| **Pharmacy Organization** | `orgs/pharmacy/` | TBD |
-| **Lab Organization** | `orgs/lab/` | TBD |
-| **Digilocker System** | `orgs/digilocker/` | TBD |
-| **Agentic AI Integration** | (Cross-module) | TBD |
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming conventions, PR requirements, and instructions on forking the repository.
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming conventions and PR requirements.
