@@ -66,6 +66,8 @@ PHARMACY_CRYPTO_PATH="$PWD/orgs/pharmacy/fabric-network-swarm/crypto-config"
 find ./orgs/pharmacy/fabric-network-swarm/app/backend -type f -name "connection.json" -exec sed -i "s|/home/ankit/fabric-network/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
 find ./orgs/pharmacy/fabric-network-swarm/app/backend -type f -name "connection.json" -exec sed -i "s|/srv/fabric-network-swarm/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
 find ./orgs/pharmacy -type f -name "registerAdmin.js" -exec sed -i "s|/home/ankit/fabric-network/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
+git update-index --assume-unchanged ./orgs/pharmacy/fabric-network-swarm/app/backend/connection.json 2>/dev/null || true
+git update-index --assume-unchanged ./orgs/pharmacy/fabric-network-swarm/app/backend/registerAdmin.js 2>/dev/null || true
 
 echo "Environment templates copied and dynamic paths resolved to $PWD."
 
@@ -141,3 +143,4 @@ echo "  To stop everything:  docker compose down"
 echo "  To see logs:         docker compose logs -f"
 echo ""
 echo "============================================================"
+
