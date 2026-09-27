@@ -191,8 +191,8 @@ enroll_identities() {
   section "STEP 2: ENROLLING IDENTITIES"
 
   log "Fixing directory permissions..."
-  sudo chown -R $USER:$USER "$ORGANIZATIONS/" 2>/dev/null || \
-    chown -R $USER:$USER "$ORGANIZATIONS/" 2>/dev/null || \
+  log "Fixing directory permissions..."
+  chown -R $USER:$USER "$ORGANIZATIONS/" 2>/dev/null || \
     warn "Could not fix permissions — will try anyway"
 
   log "Running enroll script..."
