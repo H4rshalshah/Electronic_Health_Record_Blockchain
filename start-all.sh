@@ -14,9 +14,11 @@
 #   http://localhost
 # ============================================================
 
-# Continue even if individual steps fail (blockchain networks
-# are optional — apps will still boot without Fabric binaries)
-set +e
+set -e
+export PATH=$PWD/bin:$PATH
+export FABRIC_BIN=$PWD/bin
+export FABRIC_CFG=$PWD/config
+export FABRIC_CFG_PATH=$PWD/config
 
 # ─────────────────────────────────────────────────────────────
 # STEP 0: Verify Docker is running
@@ -53,8 +55,19 @@ echo ""
 echo "============================================================"
 echo " 2. Initializing Environment Configurations"
 echo "============================================================"
-find . -type f -name ".env.example" -exec sh -c 'cp -n "$0" "${0%.example}"' {} \;
-echo "  ✅ Environment templates copied."
+# Automatically copy all *.env.example files to *.env across the repo
+find . -type f -name "*.env.example" -exec sh -c 'cp -n "$0" "${0%.example}"' {} \;
+
+# Dynamically resolve hardcoded paths to match the user's current system path
+HOSPITAL_NET_PATH="$PWD/orgs/hospital/EHR_hospitalOrg-main/ehr-network"
+find . -type f -name "*.env" -exec sed -i "s|FABRIC_BASE_PATH=.*|FABRIC_BASE_PATH=${HOSPITAL_NET_PATH}|g" {} \;
+
+PHARMACY_CRYPTO_PATH="$PWD/orgs/pharmacy/fabric-network-swarm/crypto-config"
+find ./orgs/pharmacy/fabric-network-swarm/app/backend -type f -name "connection.json" -exec sed -i "s|/home/ankit/fabric-network/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
+find ./orgs/pharmacy/fabric-network-swarm/app/backend -type f -name "connection.json" -exec sed -i "s|/srv/fabric-network-swarm/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
+find ./orgs/pharmacy -type f -name "registerAdmin.js" -exec sed -i "s|/home/ankit/fabric-network/crypto-config|${PHARMACY_CRYPTO_PATH}|g" {} 2>/dev/null \;
+
+echo "Environment templates copied and dynamic paths resolved to $PWD."
 
 # ─────────────────────────────────────────────────────────────
 # STEP 3: Start Blockchain Networks (requires Fabric binaries)
