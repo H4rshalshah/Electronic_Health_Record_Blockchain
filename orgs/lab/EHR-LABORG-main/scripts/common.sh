@@ -21,15 +21,8 @@ load_env() {
 }
 
 ensure_colima() {
-  if ! colima status >/dev/null 2>&1; then
-    colima start --cpu 4 --memory 8 --disk 60
-  fi
-  if docker context ls --format '{{.Name}} {{.Current}}' | awk '$2=="true"{print $1}' | grep -qx 'colima'; then
-    return
-  fi
-  if docker context ls --format '{{.Name}}' | grep -qx 'colima'; then
-    docker context use colima >/dev/null
-  fi
+  # Skip colima check on WSL/Linux
+  return 0
 }
 
 ensure_linux_docker() {

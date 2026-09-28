@@ -321,7 +321,7 @@ set_anchor_peers() {
 
   cd "$BASE_DIR"
 
-  export FABRIC_CFG_PATH=${HOME}/Data/fabric-samples/config
+  export FABRIC_CFG_PATH="${BASE_DIR}/configtx"
   export TEST_NETWORK_HOME="$BASE_DIR"
   . "$SCRIPTS_DIR/utils.sh"
   . "$SCRIPTS_DIR/envVar.sh"

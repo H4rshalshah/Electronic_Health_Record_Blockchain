@@ -46,7 +46,7 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-export FABRIC_CFG_PATH=${HOME}/Data/fabric-samples/config
+export FABRIC_CFG_PATH="${PWD}/configtx"
 export CORE_PEER_TLS_ENABLED=true
 export ORDERER_TLS="$ORGANIZATIONS/ordererOrganizations/example.com/orderers/orderer.example.com/tls/tlscacerts/tls-localhost-7054-ca-orderer.pem"
 

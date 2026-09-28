@@ -12,7 +12,7 @@
 
 cd ~/Data/fabric-samples/ehr_test_7/ehr-network
 
-export FABRIC_CFG_PATH=~/Data/fabric-samples/config
+export FABRIC_CFG_PATH="${PWD}/configtx"
 export CORE_PEER_TLS_ENABLED=true
 export CORE_PEER_LOCALMSPID=HospitalMSP
 export CORE_PEER_ADDRESS=localhost:7051

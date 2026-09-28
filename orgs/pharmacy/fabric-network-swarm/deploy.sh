@@ -210,7 +210,7 @@ log "STEP 4a: Packaging chaincode (must exist before peer stacks deploy)"
 docker pull hyperledger/fabric-nodeenv:2.5 2>/dev/null || warn "fabric-nodeenv pull failed - may cause slow first install"
 
 peer lifecycle chaincode package "$CC_PACKAGE" \
-    --path "$ROOT_DIR/../hospital/EHR_hospitalOrg-main/ehr-chaincode-v3" \
+    --path "$ROOT_DIR/../../hospital/EHR_hospitalOrg-main/ehr-chaincode-v3" \
     --lang node \
     --label "$CC_LABEL"
 # Also place it at the unversioned path that stack-peer*.yaml bind-mounts
