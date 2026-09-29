@@ -31,12 +31,12 @@ ensure_linux_docker() {
     exit 1
   fi
 
-  if command -v systemctl >/dev/null 2>&1; then
-    if ! systemctl is-active --quiet docker; then
-      echo "Docker service is not running. Start it with: sudo systemctl enable --now docker"
-      exit 1
-    fi
-  fi
+  # if command -v systemctl >/dev/null 2>&1; then
+  #   if ! systemctl is-active --quiet docker; then
+  #     echo "Docker service is not running. Start it with: sudo systemctl enable --now docker"
+  #     exit 1
+  #   fi
+  # fi
 }
 
 ensure_container_runtime() {

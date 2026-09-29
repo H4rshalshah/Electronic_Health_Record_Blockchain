@@ -159,7 +159,7 @@ start_cas() {
 
   log "Waiting for CAs to initialize and generate certs..."
   local WAITED=0
-  local MAX_WAIT=30
+  local MAX_WAIT=90
 
   while [ $WAITED -lt $MAX_WAIT ]; do
     # Check all 4 CA certs exist
