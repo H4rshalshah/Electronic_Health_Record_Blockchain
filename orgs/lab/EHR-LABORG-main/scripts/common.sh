@@ -56,8 +56,8 @@ ensure_container_runtime() {
 
 require_fabric_binaries() {
   if [[ ! -x "${FABRIC_BIN_DIR}/cryptogen" || ! -x "${FABRIC_BIN_DIR}/configtxgen" || ! -x "${FABRIC_BIN_DIR}/peer" ]]; then
-    echo "Fabric binaries are missing. Run ./scripts/download-fabric.sh first."
-    exit 1
+    echo "Fabric binaries are missing. Auto-executing download-fabric.sh..."
+    bash "${ROOT_DIR}/scripts/download-fabric.sh" || { echo "Failed to download Fabric binaries."; exit 1; }
   fi
   export PATH="${FABRIC_BIN_DIR}:${PATH}"
 }

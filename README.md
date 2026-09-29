@@ -1,97 +1,104 @@
-# Enterprise Blockchain Electronic Health Record (EHR) System 🏥⚡
+# 🏥 Enterprise Blockchain Electronic Health Record (EHR) System
 
-> **Decentralized Multi-Organization Healthcare Federation powered by Hyperledger Fabric v2.5, IPFS Kubo, Attribute-Based Access Control (ABAC), and Gemini Agentic AI.**
+![Hyperledger Fabric](https://img.shields.io/badge/Hyperledger%20Fabric-v2.5-2F3134?logo=hyperledger&style=for-the-badge) ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&style=for-the-badge) ![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&style=for-the-badge) ![IPFS](https://img.shields.io/badge/IPFS-Kubo-65C2CB?logo=ipfs&style=for-the-badge) ![Docker](https://img.shields.io/badge/Docker-Swarm-2496ED?logo=docker&style=for-the-badge) ![Gemini AI](https://img.shields.io/badge/Gemini-Agentic%20AI-8E75B2?logo=google-gemini&style=for-the-badge)
 
-## What is this project?
+## 📌 Executive Summary
 
-The **Blockchain Electronic Health Record (EHR) System** is an enterprise-grade, federated healthcare network designed to solve the critical challenges of data fragmentation, unauthorized medical record access, single points of failure, and data tampering in traditional hospital IT systems.
+The **Blockchain Electronic Health Record (EHR) System** is a decentralized, enterprise-grade healthcare federation built on Hyperledger Fabric v2.5. By uniting independent stakeholders (Hospital, Pharmacy, Lab, and Digilocker) on a shared immutable ledger, it solves critical challenges in data fragmentation, single points of failure, and unauthorized access. The architecture strictly enforces Attribute-Based Access Control (ABAC) and cryptographically guaranteed patient sovereignty, ensuring medical records are only accessible with explicit, on-chain consent.
 
-It connects independent healthcare stakeholders (Hospital, Pharmacy, Lab, and Digilocker) into a single, unified Hyperledger Fabric blockchain network. The system strictly enforces Attribute-Based Access Control (ABAC) and Patient Sovereignty, meaning patients cryptographically own their data and clinicians cannot view patient records without explicit on-chain consent grants. 
+---
 
-## Quickstart Setup for Team Members 🚀 (Zero Dependency Hell)
+## 🧬 High-Level Architecture
+
+The network connects 4 distinct Agentic Peer roles across multiple autonomous organizations:
+
+```mermaid
+graph TD
+    subgraph Hospital_Org [Hospital Organization]
+        H_P0[Peer 0: Doctor]
+        H_P1[Peer 1: Nurse]
+    end
+
+    subgraph Pharmacy_Org [Pharmacy Organization]
+        P_P0[Peer 0: Pharmacist]
+    end
+
+    subgraph Lab_Org [Lab Organization]
+        L_P0[Peer 0: Lab Technician]
+    end
+
+    subgraph Digilocker [Patient Digilocker]
+        D_Auth[Zero-Knowledge Patient Vault]
+    end
+
+    H_P0 <--> |ABAC Consent| Ledger[(Hyperledger Fabric v2.5 Ledger)]
+    H_P1 <--> Ledger
+    P_P0 <--> Ledger
+    L_P0 <--> Ledger
+    
+    Ledger <--> |Stores CIDs| IPFS[IPFS Kubo Node]
+    IPFS <--> |Encrypted Payloads| Digilocker
+    
+    L_P0 -.-> |OCR & Analysis| Gemini[Gemini Agentic AI]
+```
+
+---
+
+## 📦 Folder Structure
+
+```text
+EHR_blockchain/
+├── orgs/
+│   ├── hospital/         # 🏥 Hospital Organization (Backend, UIs, Fabric Network)
+│   ├── pharmacy/         # 💊 Pharmacy Organization (Swarm Network, UIs, APIs)
+│   ├── lab/              # 🧪 Lab Organization (Analysis, OCR, IPFS Gateway)
+│   └── digilocker/       # 🔐 Digilocker System (Patient Data Vault)
+├── docker-compose.yaml   # Orchestrates all Node.js/React containers
+├── start-all.sh          # 🚀 Unified deployment orchestrator script
+└── start-sequential.ps1  # Native Windows alternative startup script
+```
+
+---
+
+## ⚙️ Updated Implementation Details
+
+We have recently upgraded the core infrastructure to support robust distributed environments and advanced AI workloads:
+
+* **`start-all.sh` Orchestration Sequence**: A universal initialization script that dynamically resolves paths, injects environment variables, boots the Hyperledger Fabric nodes (Hospital -> Pharmacy -> Lab), and orchestrates the frontend/backend apps via Docker Compose.
+* **4 Distinct Agentic Peer Roles**: Granular ABAC enforcement is now mapped to specific peers: **Doctor** (diagnostics/prescriptions), **Nurse** (vital signs), **Pharmacy** (inventory/dispensing), and **Lab** (test execution and AI-assisted result uploads).
+* **Asynchronous IPFS & OCR Processing**: The `POST /api/records/ipfs` routes have been refactored. Heavy PDF OCR extraction (Tesseract.js) and IPFS pinning are now executed in background threads, returning `202 Accepted` immediately to prevent frontend HTTP timeouts on large medical files.
+* **Dynamic Environment Variables in Docker Swarm**: Swarm cluster networking is fully dynamic. Files like `hosts.final` rely on environment variable substitution (`${MACHINE1_IP}`, etc.) instead of hardcoded IPs, allowing seamless deployment across dynamic distributed servers.
+* **Roadmap: VCAP and FHIR R4 Interoperability**: Upcoming milestones include native FHIR R4 standard conversions for all on-chain payloads and Verifiable Clinical AI Provenance (VCAP) to cryptographically trace and audit Gemini AI-generated diagnostic recommendations.
+
+---
+
+## 🚀 Quickstart Setup for Team Members
 
 We have fully dockerized this project using **GitHub Container Registry (GHCR)**. 
-**You do NOT need to install Node.js or run `npm install`.** Dependencies are baked directly into pre-built cloud images, and everything routes cleanly through a single Nginx entry point.
+**You do NOT need to install Node.js or run `npm install`.**
 
 ### Step 1: Open Docker
-Before doing anything, open your start menu, search for **Docker Desktop**, and open it. Wait for the icon to turn green (Engine Running).
+Ensure **Docker Desktop** is running.
 
 ### Step 2: Download the Code & Fabric Binaries
-Open a terminal in the project root. (Windows users: open a WSL Ubuntu terminal or Git Bash. Do not use standard PowerShell/CMD if possible).
+Open a terminal (WSL Ubuntu or Git Bash) in the project root. Make sure your Fabric Binaries are installed per the setup guide. 
 
-Make sure your Fabric Binaries are installed per the setup guide. Then run the orchestrator script to initialize the blockchain networks:
+Run the automated orchestrator to boot everything:
 ```bash
 bash start-all.sh
 ```
 
-### Step 3: Pull the Pre-Built Images & Run
-```bash
-# Pull the latest dependencies/images from GitHub (fast!)
-docker compose pull
-
-There are **two ways** to run this project. Please read carefully to avoid severe performance issues, especially if you are using Windows and OneDrive.
+### Step 3: Access the Portals
+Once the containers are healthy, access the portals at:
+* **Hospital UIs:** `http://localhost:5173` (Reception) | `http://localhost:5174` (Patient)
+* **Pharmacy UIs:** `http://localhost:3001` through `3005`, and `5175`
+* **Lab Gateway:** `http://localhost:3006`
 
 > [!WARNING]
 > **Windows & OneDrive Users:** 
-> Do **NOT** clone or extract this repository into a folder synced by OneDrive (e.g., `C:\Users\Name\OneDrive\Desktop`). The immense amount of files generated by `node_modules` during installation will cause OneDrive to freeze your system and corrupt the installation. Always use a local path (e.g., `C:\Projects\`).
+> Do **NOT** clone or extract this repository into a folder synced by OneDrive. Use a local path (e.g., `C:\Projects\`).
 
-### Option 1: Native Windows Startup (Recommended for Local Dev)
-If you are on Windows, the fastest and most reliable way to run the UI and APIs is natively using PowerShell. This completely bypasses Docker's filesystem lag.
+## 🛠 For Developers
 
-1. Ensure you have **Node.js v24+** installed on your system.
-2. Open PowerShell as Administrator.
-3. Navigate to the root of this project folder.
-4. Run the automated sequential startup script:
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\start-sequential.ps1
-   ```
-5. The script will safely clean, install, and launch all 13 microservices in the background. It takes about 3-5 minutes.
-6. Once finished, access the portals in your browser:
-   * **Hospital UIs:** `http://localhost:5173` (Reception) | `http://localhost:5174` (Patient)
-   * **Pharmacy UIs:** `http://localhost:3001` through `3005`, and `5175`
-   * **Lab Gateway:** `http://localhost:3006`
-
-*(Note: The Pharmacy Patient UI at port 3004 is currently missing its `src` codebase in the repository).*
-
-### Option 2: Docker Compose (Cross-Platform / Production)
-The `docker-compose.yaml` has been optimized with **anonymous volumes** for `node_modules`. This prevents the Linux containers from crashing when trying to execute Windows-compiled binaries (like `esbuild`).
-
-> [!IMPORTANT]
-> If you are on Windows, ensure Docker Desktop is running with **WSL2 Integration** enabled.
-
-1. Open your terminal (Ubuntu WSL for Windows users, native Terminal for Mac/Linux).
-2. Start the blockchain networks and all 14 Node.js containers:
-   ```bash
-   bash start-all.sh
-   ```
-   *(Alternatively, you can just run `docker compose up -d` if the blockchain is already running).*
-3. The containers will execute `npm install` internally on their fast Linux virtual disks. Wait about 60 seconds for the Dev Servers to bind.
-4. Access the portals via the same `localhost` ports listed in Option 1.
-
-## 🛠 For Developers: How to Work on the Project
-
-### Modifying Code
-Your local folders (`orgs/hospital/`, `orgs/pharmacy/`, etc.) are actively "bind-mounted" into the running Docker containers. 
-- You can freely edit `.js`, `.jsx`, `.css` files in your code editor.
-- The browser will **auto-reload instantly** (Vite HMR is fully supported through Nginx).
-
-### What if I add a new npm package?
-If you add a new package (e.g., modifying `package.json`), you **do not** need to manually push images!
-1. Just commit your `package.json` changes to the `main` branch on GitHub.
-2. Our **GitHub Actions CI/CD** will automatically detect it and rebuild the cloud images.
-3. Tell your teammates to run `docker compose pull && docker compose up -d` to sync up.
-
----
-
-## Module Ownership Table
-We are a team of 18 dividing the work across modules:
-
-| Module | Location |
-| :--- | :--- |
-| **Hospital Organization** | `orgs/hospital/` |
-| **Pharmacy Organization** | `orgs/pharmacy/` |
-| **Lab Organization** | `orgs/lab/` |
-| **Digilocker System** | `orgs/digilocker/` |
-| **Agentic AI Integration** | (Cross-module) |
-
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming conventions and PR requirements.
+* **Hot Reloading:** Your local folders are actively bind-mounted into the containers. Vite HMR is fully supported through Nginx.
+* **Dependencies:** If you modify `package.json`, commit it to `main`. Our CI/CD will rebuild the images. Run `docker compose pull && docker compose up -d` to sync.

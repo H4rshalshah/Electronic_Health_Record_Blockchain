@@ -145,6 +145,9 @@ start_cas() {
     success "ehr_network already exists — reusing"
   fi
 
+  # Clean up stale crypto to prevent CA Error 71
+  rm -rf "$ORGANIZATIONS/ordererOrganizations" "$ORGANIZATIONS/peerOrganizations"
+
   # Create CA directories if missing (needed for volume mounts)
   mkdir -p "$ORGANIZATIONS/ordererOrganizations/example.com/ca"
   mkdir -p "$ORGANIZATIONS/peerOrganizations/hospital.example.com/ca"
