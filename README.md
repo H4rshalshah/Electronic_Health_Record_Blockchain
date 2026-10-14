@@ -118,27 +118,24 @@ EHR_blockchain/
 │   ├── pharmacy/         # 💊 Pharmacy Organization (Swarm Network, UIs, APIs)
 │   ├── lab/              # 🧪 Lab Organization (Analysis, OCR, IPFS Gateway)
 │   └── digilocker/       # 🔐 Digilocker System (Patient Data Vault)
-│       # 📊 Group 1 Dashboard: hospital/.../ehr-backend-v3/dashboard-api + ehr-frontend-v2/dashboard-portal
+│       # 📊 Group 1 Dashboard (planned): hospital/.../ehr-backend-v3/dashboard-api + ehr-frontend-v2/dashboard-portal
 ├── start.sh              # 🚀 Unified startup orchestrator (Fabric network + APIs + Portals)
-├── stop.sh               # 🛑 Stop all running services, containers & project ports
-├── setup.sh              # 📦 Automated dependency installation & image pre-caching
-└── start-sequential.sh   # Background microservice & frontend lifecycle manager
+├── stop.sh               # 🛑 Stop all running services & blockchain network
+├── setup.sh              # 📦 Automated dependency installation
+├── start-sequential.sh   # Background microservice starter and manager
+└── start-sequential.ps1  # Native Windows alternative startup script
 ```
 
 ---
 
-## ⚙️ Modernized Core Architecture & Key Upgrades
+## ⚙️ Updated Implementation Details
 
-> [!TIP]
-> **Detailed Post-Mortem & Blunders Audit**: For an exhaustive, tagged analysis of what was broken/missing in the base student submissions, critical anti-patterns resolved, and side-by-side comparative feature matrix, read **[README_BASE_VS_NEW_AUDIT.md](file:///home/himanshu/Desktop/EHR_blockchain/README_BASE_VS_NEW_AUDIT.md)**.
-
-We have upgraded the core infrastructure to support robust distributed environments and advanced AI workloads:
+We have recently upgraded the core infrastructure to support robust distributed environments and advanced AI workloads:
 
 * **Unified Startup Orchestration (`start.sh`)**: A universal initialization script that dynamically resolves paths, injects environment variables, boots the Hyperledger Fabric nodes, verifies chaincode deployment, and brings up all 4 web frontends and microservices.
 * **4 Distinct Agentic Peer Roles**: Granular ABAC enforcement is now mapped to specific peers: **Doctor** (diagnostics/prescriptions), **Nurse** (vital signs), **Pharmacy** (inventory/dispensing), and **Lab** (test execution and AI-assisted result uploads).
 * **Asynchronous IPFS & OCR Processing**: The `POST /api/records/ipfs` routes have been refactored. Heavy PDF OCR extraction (Tesseract.js) and IPFS pinning are now executed in background threads, returning `202 Accepted` immediately to prevent frontend HTTP timeouts on large medical files.
 * **Dynamic Environment Variables in Docker Swarm**: Swarm cluster networking is fully dynamic. Files like `hosts.final` rely on environment variable substitution (`${MACHINE1_IP}`, etc.) instead of hardcoded IPs, allowing seamless deployment across dynamic distributed servers.
-* **Interactive Terminal Ledger Explorer (`ehr_explorer.sh`)**: Dedicated CLI tool to query world state, inspect transaction blocks, and dump audit trails directly in the terminal.
 * **Roadmap: VCAP and FHIR R4 Interoperability**: Upcoming milestones include native FHIR R4 standard conversions for all on-chain payloads and Verifiable Clinical AI Provenance (VCAP) to cryptographically trace and audit Gemini AI-generated diagnostic recommendations.
 
 ---
