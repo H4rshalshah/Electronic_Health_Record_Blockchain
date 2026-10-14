@@ -93,7 +93,16 @@ stop_all() {
             rm -f "${pid_file}"
         fi
     done
-    echo "All services stopped."
+
+    # Terminate any remaining processes on project ports (handles orphaned child processes)
+    for port in 4001 4002 4003 4004 4005 4006 5173 5174 5175 8080; do
+        pids=$(lsof -ti :${port} 2>/dev/null || true)
+        if [ -n "${pids}" ]; then
+            echo "[-] Freeing port :${port} (PIDs: ${pids})..."
+            kill -9 ${pids} 2>/dev/null || true
+        fi
+    done
+    echo "All services stopped and ports freed."
 }
 
 status_all() {
