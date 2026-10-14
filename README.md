@@ -105,6 +105,7 @@ flowchart TB
     PEER2 -->|Broadcast Tx| ORDERER
     PEER_DIAG -->|Broadcast Tx| ORDERER
     PEER_PROV -->|Broadcast Tx| ORDERER
+```
 
 ---
 
