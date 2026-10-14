@@ -58,6 +58,10 @@ BASE_DIR=$(cd "$(dirname "$0")/.." && pwd)
 DOCKER_DIR="$BASE_DIR/docker"
 SCRIPTS_DIR="$BASE_DIR/scripts"
 ORGANIZATIONS="$BASE_DIR/organizations"
+REPO_ROOT="$(cd "$BASE_DIR/../../../.." && pwd)"
+if [ -d "$REPO_ROOT/bin" ]; then
+  export PATH="$REPO_ROOT/bin:$PATH"
+fi
 
 # ============================================================
 # PARSE ARGUMENTS
@@ -288,7 +292,8 @@ start_network() {
     curl -s -X POST \
       "http://localhost:5001/api/v0/config?arg=API.HTTPHeaders.Access-Control-Allow-Methods&arg=[\"PUT\",\"POST\",\"GET\"]&json=true" \
       --output /dev/null 2>/dev/null || true
-    success "IPFS CORS configured"
+    docker exec ipfs.ehr.local ipfs config --json Gateway.PublicGateways '{"localhost": {"UseSubdomains": false, "Paths": ["/ipfs", "/ipns"]}}' >/dev/null 2>&1 || true
+    success "IPFS CORS and Gateway path routing configured"
   fi
 
   success "All network containers running"
