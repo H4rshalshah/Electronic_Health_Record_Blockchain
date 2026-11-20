@@ -37,9 +37,11 @@ Thumbs.db
 
 # Large files that shouldn't be tracked
 *.pdf
+*.docx
 *.mp4
 *.webm
 *.pptx
+bin/pandoc
 repomix-output.xml
 base work/
 

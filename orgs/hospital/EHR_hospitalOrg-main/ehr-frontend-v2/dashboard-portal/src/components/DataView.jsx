@@ -109,4 +109,12 @@ export function DataView({ title, description, path, rows, columns, children, da
 }
 
 export function eventRows(data) { return data?.items || [] }
-export function valueText(value) { return value == null ? '—' : typeof value === 'object' ? value.state || value.value || '—' : String(value) }
+export function valueText(value) {
+  if (value == null) return '0'
+  if (typeof value === 'object') {
+    if (value.value != null) return String(value.value)
+    if (value.state) return value.state
+    return '0'
+  }
+  return String(value)
+}

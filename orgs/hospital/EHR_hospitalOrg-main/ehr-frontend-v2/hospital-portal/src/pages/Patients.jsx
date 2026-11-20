@@ -240,11 +240,21 @@ function RegisterModal({ open, onClose, api }) {
     bloodGroup: 'O+', contact: '', address: '', symptoms: ''
   })
   const [result, setResult] = useState(null)
+  const [registeredPatient, setRegisteredPatient] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]   = useState('')
   const [success, setSuccess] = useState('')
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleClose = () => {
+    setResult(null)
+    setRegisteredPatient(null)
+    setError('')
+    setSuccess('')
+    setForm({ patientId: '', name: '', age: '', gender: 'Male', bloodGroup: 'O+', contact: '', address: '', symptoms: '' })
+    onClose()
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -253,8 +263,10 @@ function RegisterModal({ open, onClose, api }) {
     setSuccess('')
     setResult(null)
     try {
-      const res = await api().post('/patients', { ...form, age: parseInt(form.age) }, { timeout: 120000 })
-      setSuccess(`Patient ${form.patientId} registered.`)
+      const patientPayload = { ...form, age: parseInt(form.age) }
+      const res = await api().post('/patients', patientPayload, { timeout: 120000 })
+      setSuccess(`Patient ${form.patientId} registered successfully.`)
+      setRegisteredPatient(patientPayload)
       setResult(res.data.data)
       setForm({ patientId: '', name: '', age: '', gender: 'Male', bloodGroup: 'O+', contact: '', address: '', symptoms: '' })
     } catch (err) {
@@ -266,64 +278,149 @@ function RegisterModal({ open, onClose, api }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Register New Patient" size="md">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <Input label="Patient ID *" value={form.patientId} onChange={e => update('patientId', e.target.value)} placeholder="PAT-001" required />
-          <Input label="Full Name *" value={form.name} onChange={e => update('name', e.target.value)} placeholder="John Doe" required />
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <Input label="Age *" type="number" value={form.age} onChange={e => update('age', e.target.value)} min="0" max="150" required />
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender *</label>
-            <select value={form.gender} onChange={e => update('gender', e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              {['Male','Female','Other'].map(g => <option key={g}>{g}</option>)}
-            </select>
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title={result ? "Registration Complete & Symptom Analysis" : "Register New Patient"}
+      size={result ? "lg" : "md"}
+    >
+      {result ? (
+        <div className="space-y-4">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+              ✓
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 dark:text-white">Patient Record Anchored On Ledger</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                <span className="font-semibold text-slate-900 dark:text-white">{registeredPatient?.name}</span> ({registeredPatient?.gender}, {registeredPatient?.age} yrs) was registered with ID <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{registeredPatient?.patientId}</span>.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Blood Group *</label>
-            <select value={form.bloodGroup} onChange={e => update('bloodGroup', e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              {['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(g => <option key={g}>{g}</option>)}
-            </select>
-          </div>
-        </div>
-        <Input label="Contact *" value={form.contact} onChange={e => update('contact', e.target.value)} placeholder="9876543210" required />
-        <Input label="Address *" value={form.address} onChange={e => update('address', e.target.value)} placeholder="123 Main Street, City" required />
-        <div className="flex flex-col gap-1">
-          <label htmlFor="reg-symptoms" className="text-sm font-medium text-slate-700 dark:text-slate-300">Symptoms *</label>
-          <textarea id="reg-symptoms" rows={3} required minLength={3} maxLength={1000} value={form.symptoms}
-            onChange={e => update('symptoms', e.target.value)}
-            placeholder="In the patient's words, e.g. high fever for 3 days with body ache and rash"
-            className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <p className="text-xs text-slate-500">Used to assign a provisional disease code and to prepare an AI cross-reference for the doctor.</p>
-        </div>
-        {loading && <p className="text-xs text-slate-500" role="status">Registering on the ledger and analysing symptoms. This can take up to a minute.</p>}
-        {error   && <Alert type="error">{error}</Alert>}
-        {success && <Alert type="success">{success}</Alert>}
-        {result && (
-          <div className="rounded-xl border border-slate-200 p-3 text-sm space-y-1.5">
-            <p><span className="text-slate-500">DID:</span> <span className="font-mono break-all">{result.did}</span></p>
+
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/70 dark:bg-slate-900/60 space-y-3">
+            <div>
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Decentralized Identifier (DID)</span>
+              <p className="font-mono text-xs text-blue-600 dark:text-sky-400 break-all select-all font-semibold mt-0.5">{result.did}</p>
+            </div>
+
             {result.intake && (
-              <>
-                <p><span className="text-slate-500">Provisional code:</span> <span className="font-mono font-semibold">{result.intake.provisional.code}</span> {result.intake.provisional.name}
-                  {!result.intake.provisional.matched && <span className="text-slate-500"> (no specific match in the template)</span>}</p>
-                {result.intake.aiAnalysis.status === 'OK' ? (
-                  <p><span className="text-slate-500">AI urgency estimate:</span> {result.intake.aiAnalysis.urgency || 'not stated'} <span className="text-slate-500">— for the doctor; not a diagnosis</span></p>
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+                <div>
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Provisional ICD-10 Code</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-mono font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded text-sm">
+                      {result.intake.provisional.code}
+                    </span>
+                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                      {result.intake.provisional.name}
+                    </span>
+                    {!result.intake.provisional.matched && (
+                      <span className="text-xs text-slate-400 italic">(general symptom template)</span>
+                    )}
+                  </div>
+                </div>
+
+                {result.intake.aiAnalysis?.status === 'OK' ? (
+                  <div className="space-y-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">AI Urgency Estimate:</span>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                        result.intake.aiAnalysis.urgency === 'EMERGENCY'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300'
+                          : result.intake.aiAnalysis.urgency === 'HIGH'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300'
+                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
+                      }`}>
+                        {result.intake.aiAnalysis.urgency || 'MEDIUM'}
+                      </span>
+                      <span className="text-[11px] text-slate-400 italic">— AI cross-reference for doctor; not a diagnosis</span>
+                    </div>
+
+                    {result.intake.aiAnalysis.summary && (
+                      <p className="text-xs text-slate-700 dark:text-slate-300 italic bg-white dark:bg-slate-900/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                        "{result.intake.aiAnalysis.summary}"
+                      </p>
+                    )}
+
+                    {result.intake.aiAnalysis.suggestedTests?.length > 0 && (
+                      <div className="text-xs text-slate-600 dark:text-slate-400">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Suggested Investigations:</span>{' '}
+                        {result.intake.aiAnalysis.suggestedTests.join(', ')}
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <p className="text-amber-700">AI analysis unavailable: {result.intake.aiAnalysis.reason}. The provisional code was still recorded.</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 pt-1">
+                    AI triage unavailable ({result.intake.aiAnalysis?.reason || 'offline'}). Provisional code was securely anchored to ledger.
+                  </p>
                 )}
-              </>
+              </div>
             )}
-            {result.intakeError && <p className="text-red-600">The patient is registered, but the symptom analysis could not be recorded: {result.intakeError}</p>}
+
+            {result.intakeError && (
+              <p className="text-xs text-red-600 pt-1">Ledger note: {result.intakeError}</p>
+            )}
           </div>
-        )}
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit" loading={loading}>Register Patient</Button>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setResult(null)
+                setRegisteredPatient(null)
+              }}
+            >
+              Register Another Patient
+            </Button>
+            <Button type="button" onClick={handleClose}>
+              Done / Close
+            </Button>
+          </div>
         </div>
-      </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Patient ID *" value={form.patientId} onChange={e => update('patientId', e.target.value)} placeholder="PAT-001" required />
+            <Input label="Full Name *" value={form.name} onChange={e => update('name', e.target.value)} placeholder="John Doe" required />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <Input label="Age *" type="number" value={form.age} onChange={e => update('age', e.target.value)} min="0" max="150" required />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Gender *</label>
+              <select value={form.gender} onChange={e => update('gender', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {['Male','Female','Other'].map(g => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Blood Group *</label>
+              <select value={form.bloodGroup} onChange={e => update('bloodGroup', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(g => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+          </div>
+          <Input label="Contact *" value={form.contact} onChange={e => update('contact', e.target.value)} placeholder="9876543210" required />
+          <Input label="Address *" value={form.address} onChange={e => update('address', e.target.value)} placeholder="123 Main Street, City" required />
+          <div className="flex flex-col gap-1">
+            <label htmlFor="reg-symptoms" className="text-sm font-medium text-slate-700 dark:text-slate-300">Symptoms *</label>
+            <textarea id="reg-symptoms" rows={3} required minLength={3} maxLength={1000} value={form.symptoms}
+              onChange={e => update('symptoms', e.target.value)}
+              placeholder="In the patient's words, e.g. high fever for 3 days with body ache and rash"
+              className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <p className="text-xs text-slate-500">Used to assign a provisional disease code and to prepare an AI cross-reference for the doctor.</p>
+          </div>
+          {loading && <p className="text-xs text-slate-500" role="status">Registering on the ledger and analysing symptoms. This can take a moment.</p>}
+          {error   && <Alert type="error">{error}</Alert>}
+          {success && <Alert type="success">{success}</Alert>}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
+            <Button type="submit" loading={loading}>Register Patient</Button>
+          </div>
+        </form>
+      )}
     </Modal>
   )
 }

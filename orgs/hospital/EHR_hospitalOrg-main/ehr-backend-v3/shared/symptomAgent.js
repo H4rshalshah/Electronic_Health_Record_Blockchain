@@ -14,11 +14,11 @@
  * says so (status UNAVAILABLE) and carries no clinical content.
  */
 
-const MODEL    = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+const MODEL    = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 const BASE_URL = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
 // Tried in order when the preferred model answers 429/500/503 or does not
 // answer in time. The result records which model actually answered.
-const FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS || 'gemini-3.5-flash-lite,gemini-flash-lite-latest')
+const FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS || 'gemini-flash-lite-latest,gemini-2.5-flash')
   .split(',').map(m => m.trim()).filter(m => m && m !== MODEL);
 const ATTEMPT_TIMEOUT_MS = Number(process.env.SYMPTOM_AGENT_ATTEMPT_TIMEOUT_MS || 20000);
 const TIMEOUT_MS = Number(process.env.SYMPTOM_AGENT_TIMEOUT_MS || 55000);

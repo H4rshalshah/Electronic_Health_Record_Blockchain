@@ -53,7 +53,7 @@
     "role": "manager",
     "mspId": "HospitalMSP",
     "peer": "peer2",
-    "status": "active"
+    "status": "revoked"
   },
   "medrecordofficer": {
     "password": "$2a$10$wfni3qmrBtiao9tT30k4OuatADYNM/g3dwOaAaKMsfMnkWHbm.rlG",
@@ -151,14 +151,7 @@
     "role": "doctor",
     "mspId": "HospitalMSP",
     "peer": "peer1",
-    "status": "revoked"
-  },
-  "dr_new": {
-    "password": "$2a$10$mec.BW.69SPvXwEfodAD2u4Rb8ieJI8U5BaMVCGyD1MeJ/YQgUnsy",
-    "role": "doctor",
-    "mspId": "HospitalMSP",
-    "peer": "peer1",
-    "status": "revoked"
+    "status": "active"
   },
   "DOC-004": {
     "password": "$2a$10$P4G6K3QWKBczqfHkXo71v.Ek5YrDr3izKpJkW6kfpV00PvwDB1mge",

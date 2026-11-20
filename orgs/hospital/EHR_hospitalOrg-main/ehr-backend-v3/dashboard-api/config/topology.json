@@ -283,6 +283,7 @@
       "id": "symptom-agent",
       "kind": "ai",
       "org": "HospitalMSP",
+      "peerId": "peer0.hospital",
       "status": "not_connected",
       "dependency": "AI"
     }

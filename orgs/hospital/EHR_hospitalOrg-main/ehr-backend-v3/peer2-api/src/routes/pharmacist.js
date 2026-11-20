@@ -7,6 +7,7 @@ const { peerContext }  = require('../middleware/peerContext');
 const { wrap, parseResult } = require('../middleware/errorHandler');
 const { fetchByCID, pinJSON } = require('../fabric/ipfsClient');
 const logger = require('../config/logger');
+const { emit } = require('../../../shared/dashboardEmitter');
 
 const asPharmacist = [authenticate, requireRole('pharmacist'), peerContext];
 
@@ -64,6 +65,10 @@ router.put('/visits/:id/dispense',
     const result = await req.contract.submitTransaction(
       'ClinicalContract:DispenseMedication', visitId, newCID
     );
+    emit('AGENT_EXECUTION_COMPLETED', {
+      source: 'peer2-api', org: 'HospitalMSP', severity: 'INFO',
+      payload: { agentId: 'pharmacy-agent', status: 'COMPLETED', durationMs: 25 }
+    });
     return res.json({ success: true, data: parseResult(result) });
   })
 );

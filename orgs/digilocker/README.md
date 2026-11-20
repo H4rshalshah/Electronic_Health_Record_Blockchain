@@ -4,11 +4,11 @@ Lets a patient bring documents issued to their DigiLocker (lab reports, prescrip
 
 ```mermaid
 flowchart LR
-  Portal["Patient portal\n/digilocker"] -->|patient JWT| Svc["digilocker-service :4007"]
-  Svc -->|OAuth 2.0 + PKCE| DL["DigiLocker\n(sandbox simulator or live)"]
-  Svc -->|AES-256-GCM envelope| IPFS["ipfs-service → Kubo"]
-  Svc -->|DigiLockerContract:AnchorDocument| Fabric["Fabric ehrchannel / ehr"]
-  Svc -.->|zero-PHI events| Dash["dashboard-api /internal/events"]
+  Portal["Patient portal (/digilocker)"] -->|"patient JWT"| Svc["digilocker-service (:4007)"]
+  Svc -->|"OAuth 2.0 + PKCE"| DL["DigiLocker (sandbox or live)"]
+  Svc -->|"AES-256-GCM envelope"| IPFS["ipfs-service to Kubo IPFS"]
+  Svc -->|"DigiLockerContract:AnchorDocument"| Fabric["Fabric ehrchannel / ehr"]
+  Svc -.->|"zero-PHI events"| Dash["dashboard-api (/internal/events)"]
 ```
 
 ## Parts

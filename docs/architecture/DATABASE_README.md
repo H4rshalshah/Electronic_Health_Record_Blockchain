@@ -92,39 +92,63 @@ Each Hyperledger Fabric peer node maintains its own copy of the channel ledger (
   - `peer0.provider.example.com:/var/hyperledger/production`
 
 #### Data Schemas Managed on GoLevelDB
-The state is managed by 8 smart contracts deployed on `ehrchannel`:
+The state is managed by 13 smart contracts deployed on `ehrchannel`:
 
 - **Patient Contract (`patientContract.js`)**:
-  - `patientId`: Unique patient identifier.
-  - `abhaId`: Hashed Ayushman Bharat Health Account (ABHA) reference.
-  - `demographics`: Minimal demographic metadata.
+  - `patientId`: Unique patient identifier (`PATIENT_<patientId>`).
+  - `did`: W3C Decentralized Identifier (`did:ehr:<sha256>`).
+  - `demographics`: Minimal demographic metadata (age, gender, blood group, encrypted contact).
   - `registrationDate`: ISO timestamp.
+- **Visit Contract (`visitContract.js`)**:
+  - `visitId`: Unique encounter identifier (`VISIT_<visitId>`).
+  - `patientId`: Reference to owning patient.
+  - `doctorId`: Assigned consulting clinician.
+  - `status`: `CREATED`, `DOCTOR_ASSIGNED`, `IN_CONSULTATION`, `PENDING_LAB`, `LAB_COMPLETED`, `PENDING_PHARMACY`, `COMPLETED`.
+  - `diagnosisNotes`: Consultation examination notes.
+  - `diseaseCode`: ICD-10 diagnostic code with clinician override justification.
 - **Clinical Contract (`clinicalContract.js`) & EHR Contract (`ehrContract.js`)**:
   - `recordId`: Unique EHR asset ID.
   - `patientId`: Reference to owner patient.
-  - `diagnosisCodes`: ICD-10 diagnostic codes.
-  - `vitals`: Blood pressure, heart rate, temperature, SpO2 (via `RecordVitals`).
+  - `vitals`: Blood pressure, heart rate, temperature, SpO2.
   - `prescriptions`: Prescribed medication names, dosages, and quantities.
   - `ipfsCid`: Hash pointer to the off-chain clinical document on IPFS.
   - `recordHash`: SHA-256 cryptographic checksum of the off-chain file.
   - `authorMsp`: Submitting organization MSP (`HospitalMSP`).
-- **Access Control & Consent Contract (`accessContract.js`, `accessControl.js`)**:
-  - `consentId`: Unique consent grant reference.
+- **Access Control & Consent Contract (`accessContract.js`)**:
+  - `consentId`: Unique consent grant reference (`CONSENT_<patientId>_<granteeId>`).
   - `patientId`: Granting patient.
   - `granteeId` / `granteeRole`: Authorized practitioner ID and role.
   - `status`: `ACTIVE`, `REVOKED`, or `EXPIRED`.
   - `expiresAt`: Validity epoch timestamp.
   - `emergencyOverride`: Boolean flag for audited "break-glass" emergency access.
 - **Lab Contract (`labContract.js`)**:
-  - `orderId`: Lab requisition ID.
-  - `status`: `REQUESTED`, `IN_PROGRESS`, `COMPLETED`.
-  - `reportCid`: IPFS link to the diagnostic report scan.
-  - `technicianSignature`: Digital signature of the verifying technician.
+  - `requestId`: Lab requisition ID (`LAB_<requestId>`).
+  - `visitId`: Associated clinical encounter.
+  - `status`: `REQUESTED`, `ACKNOWLEDGED`, `ANALYZED`, `APPROVED`.
+  - `resultsHash`: Cryptographic SHA-256 hash of laboratory biomarker report.
+  - `supervisorSignature`: Verification signature of authorizing supervisor.
 - **Claims Contract (`claimsContract.js`)**:
-  - `claimId`: Insurance reimbursement claim ID.
+  - `claimId`: Insurance reimbursement claim ID (`CLAIM_<claimId>`).
   - `claimStatus`: `PENDING`, `APPROVED`, `REJECTED`.
-  - `amount`: Claimed amount.
+  - `amount`: Claimed reimbursement amount.
   - `adjudicationLog`: Pointers to audit records.
+- **FHIR R4 Contract (`fhirContract.js`)**:
+  - `recordKey`: Structured standard resource key (`RECORD~<patientIdHash>~<recordId>`).
+  - `resourceType`: `Patient`, `Encounter`, `Observation`, `DiagnosticReport`, etc.
+  - `dataCID`: Content-addressed pointer on Kubo IPFS.
+  - `patientRecordHash`: Cryptographic checksum of canonical FHIR JSON.
+- **DigiLocker Contract (`digilockerContract.js`)**:
+  - `docHash`: Cryptographic SHA-256 hash of authentic clinical PDF (`DOC~<docHash>`).
+  - `patientIdHash`: Keyed HMAC hash of patient identifier (Zero-PHI).
+  - `docType`: `CBC`, `PRESCRIPTION`, `DISCHARGE_SUMMARY`.
+  - `ipfsCid`: Pinned encrypted PDF location.
+- **DID Contract (`didContract.js`)**:
+  - `didUri`: W3C Decentralized Identifier (`DID_did:ehr:<hash>`).
+  - `publicKey`: Digital signature public key for cryptographic verification.
+- **Code Contract (`codeContract.js`)**:
+  - `code`: ICD-10 medical ontology classification and clinician override audit log.
+- **Stats Contract (`statsContract.js`)**:
+  - `metrics`: Aggregate block counts, active encounters, and consortium telemetry.
 
 ---
 
@@ -284,12 +308,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Pharmacist as Pharmacist (Browser :3002/:3005)
+    actor Pharmacist as Pharmacist (Unified Suite :5175)
     participant Backend as Pharmacy Backend (:3000)
     participant IPFS as Kubo IPFS (:5001)
     participant Store as Pharmacy Store (JSON)
     participant Gateway as IPFS Gateway (:8090)
-    actor Patient as Patient (Browser :3004)
+    actor Patient as Patient (Patient Portal :5174)
 
     Pharmacist->>Backend: POST /api/billing (patientId, medicines, amount)
     Backend->>Store: Check patient profile & access authorization

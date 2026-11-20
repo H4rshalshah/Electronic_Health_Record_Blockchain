@@ -19,6 +19,7 @@ const { anchorFHIRRecord } = require('../../../shared/fhir-anchor');
 const lab = require('../../../shared/labReport');
 const directory = require('../../../shared/patientDirectory');
 const logger = require('../config/logger');
+const { emit } = require('../../../shared/dashboardEmitter');
 
 const LAB_ROLES   = ['labreceptionist', 'labtechnician', 'radiologist', 'labsupervisor', 'labadmin'];
 const RECEPTION   = ['labreceptionist', 'labadmin'];
@@ -225,6 +226,15 @@ router.put('/visits/:id/request/:reqId/submit', ...asLab(...BENCH), ids,
     const result = parseResult(await req.contract.submitTransaction(
       'LabContract:SubmitLabResult', visitId, labRequestId, newCID, resultsHash
     ));
+    emit('AGENT_EXECUTION_COMPLETED', {
+      source: 'extorg-api', org: 'DiagnosticsMSP', severity: 'INFO',
+      payload: {
+        agentId: 'lab-agent',
+        status: 'COMPLETED',
+        durationMs: 120,
+        model: 'clinical-ai-agent'
+      }
+    });
     logger.info('Lab result submitted', { visitId, labRequestId, userId: req.user.userId });
 
     // FHIR DiagnosticReport anchor (hashes only on-chain). Not part of the

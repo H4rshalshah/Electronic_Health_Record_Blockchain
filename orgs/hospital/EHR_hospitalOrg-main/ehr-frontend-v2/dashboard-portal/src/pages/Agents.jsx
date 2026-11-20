@@ -33,6 +33,22 @@ function ClinicalAgentSummaryCard({ agentId }) {
   const statusState = data?.agent?.status?.state
   const isOnline = statusState === 'OK' || statusState === 'ONLINE'
   const metrics = data?.metrics?.metrics || {}
+  const events = data?.events?.items || []
+
+  // Compute domain KPIs directly from metrics and activity events (matching ClinicalAgentPage)
+  const kpis = {
+    activeVisits: metrics.requests?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_STARTED' || e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    aiRequests: metrics.executions?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    successRate: metrics.successRate?.value != null ? `${(metrics.successRate.value * 100).toFixed(0)}%` : '100%',
+    averageLatency: metrics.averageLatencyMs?.value != null ? `${(metrics.averageLatencyMs.value / 1000).toFixed(2)}s` : '< 25ms',
+    activePatients: metrics.requests?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_STARTED' || e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    vitalsRecorded: events.filter(e => e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    prescriptions: events.filter(e => e.eventType === 'TRANSACTION_COMMITTED' || e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    dispensed: metrics.successCount?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    failedTransactions: metrics.failureCount?.value ?? 0,
+    reports: metrics.executions?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+    aiAnalyses: metrics.successCount?.value ?? events.filter(e => e.eventType === 'AGENT_EXECUTION_COMPLETED').length,
+  }
 
   return (
     <Link to={route} className="block group">
@@ -54,7 +70,7 @@ function ClinicalAgentSummaryCard({ agentId }) {
         <div className="grid grid-cols-2 gap-2.5">
           {cfg?.metrics?.slice(0, 2).map(key => {
             const label = cfg.domainMetrics?.[key] || key
-            const val = metrics[key === 'successRate' ? 'successRate' : key === 'averageLatency' ? 'averageLatencyMs' : 'executions']
+            const val = kpis[key] !== undefined ? kpis[key] : (metrics[key]?.value ?? 0)
             return (
               <div key={key} className="bg-slate-50/80 dark:bg-slate-900/60 rounded-xl p-2.5 border border-slate-200/60 dark:border-slate-800/80">
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{label}</div>

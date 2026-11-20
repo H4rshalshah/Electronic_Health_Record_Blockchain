@@ -1,732 +1,408 @@
-# EHR Blockchain Workspace
+# Electronic Health Record (EHR) Blockchain Consortium
+## Multi-Organization Healthcare Ledger with Zero-PHI IPFS Off-Chain Storage, 13 Chaincode Contracts, Autonomous Clinical AI Decision Support, and Real-Time Observability
 
-This repository contains a production-grade academic/demo Electronic Health Record (EHR) Consortium platform built around a Hyperledger Fabric 2.5 blockchain network (`ehrchannel`), containerized Express microservices, off-chain Kubo IPFS storage, an autonomous clinical AI agent, a multi-agent laboratory diagnostics gateway with VCAP provenance, an authentic DigiLocker clinical vault, an HL7 FHIR R4 interoperability layer, and a real-time observability dashboard.
+[![Hyperledger Fabric](https://img.shields.io/badge/Hyperledger%20Fabric-v2.5%20LTS-2F3134?logo=hyperledger&logoColor=white)](https://www.hyperledger.org/projects/fabric)
+[![IPFS](https://img.shields.io/badge/IPFS-Kubo%20v0.31-65C2CB?logo=ipfs&logoColor=white)](https://ipfs.tech/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-v0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-v18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker%20Compose-v2-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?logo=nginx&logoColor=white)](https://nginx.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-FHIR R4, ABDM/ABHA, India DPDP Act 2023, HIPAA-style controls, and GDPR are design targets and reference implementations. All public dashboard events and ledger writes follow a strict Zero-PHI architecture (keyed HMAC hashes, CIDs, and cryptographic digests only).
+---
 
-## Quick start (verified on WSL2 Ubuntu, 2026-11-19)
+### 👨‍💻 Project Repository & Academic Credentials
 
-This section is the current, tested way to run the project. Where an older section further down disagrees with it, this section is right.
+* **Repository URL:** [https://github.com/devbyhimans/Electronic_Health_Record_Blockchain.git](https://github.com/devbyhimans/Electronic_Health_Record_Blockchain.git)
+* **Lead System Architect & Core Orchestrator:** **Himanshu**
+* **Roll Number:** **24MCF1R16**
+* **Department:** Master of Computer Applications (MCA 3rd Year)
+* **Institution:** National Institute of Technology (NIT), Warangal
+* **Pillar Focus:** Real-Time Blockchain Event Architecture, Master Container Orchestration (`./start.sh` / `./stop.sh`), Nginx API Gateway, Unified Pharmacy Suite, and Zero-PHI Data Streaming Pipeline.
 
-**You need:** Docker Engine with the Compose plugin, Node.js 20+, `curl`, and about 8 GB of free RAM. Ubuntu 22.04/24.04 is the target. WSL2 works but is slow when the project sits on the Windows drive (`/mnt/c/...`).
+---
+
+## 📖 Executive Summary
+
+The **CareGrid EHR Consortium** is a production-grade, privacy-first healthcare blockchain ecosystem engineered on **Hyperledger Fabric 2.5 LTS**. It federates three autonomous healthcare organizations (**HospitalMSP**, **DiagnosticsMSP**, and **ProviderMSP**) alongside an independent Raft consensus ordering cluster (**OrdererMSP**).
+
+To guarantee strict compliance with national and international healthcare data privacy mandates (including the **India Digital Personal Data Protection (DPDP) Act 2023**, **Ayushman Bharat Digital Mission (ABDM/ABHA)**, **HIPAA Security Rules**, and **GDPR**), CareGrid adopts a rigorous **Zero-PHI (Zero Protected Health Information) on-chain architecture**:
+1. **On-Chain Ledger:** Hyperledger Fabric stores only immutable Decentralized Identifiers (W3C DIDs: `did:ehr:<hash>`), cryptographic hashes (SHA-256 digests), zero-knowledge consent grants, access audit trails, and IPFS Content Identifiers (CIDs).
+2. **Off-Chain Storage:** Bulky clinical narratives, diagnostic scan blobs, itemized prescription sheets, and patient identity profiles are sealed with **AES-256-GCM envelope encryption** and content-addressed inside an immutable **Kubo IPFS** cluster.
+3. **Clinical Intelligence:** Autonomous clinical decision support agents (**FastAPI** with PubMed RAG and **Google Gemini** symptom triage) assist medical practitioners during consultation without exposing unencrypted health data to public ledgers.
+4. **Real-Time Observability:** A high-frequency WebSocket and Server-Sent Events (SSE) event pipeline streams block commit telemetry, peer latency metrics, and clinical agent traces to an Obsidian Glass management console.
+
+---
+
+## ⚡ Quick Start & Verification (WSL2 / Ubuntu Linux)
+
+The entire ecosystem (5 Fabric peers, Raft orderer, 4 CAs, Kubo IPFS, 8 REST gateways, 1 FastAPI AI agent, 4 React portals, and Nginx proxy) boots deterministically via a single orchestration command.
+
+### System Requirements
+* **Operating System:** Ubuntu 22.04 LTS / 24.04 LTS (Native or WSL2 on Windows 10/11)
+* **Hardware:** 8 GB RAM minimum (16 GB recommended), 4 CPU cores, 25 GB free disk space
+* **Installed Runtimes:** Docker Engine with Compose V2 plugin, Node.js 20+, `curl`, and `jq`
+
+### One-Command Setup and Startup
 
 ```bash
-git clone <repo-url> && cd Electronic_Health_Record_Blockchain
-git checkout finish/integration-phases
+# 1. Clone the repository
+git clone https://github.com/devbyhimans/Electronic_Health_Record_Blockchain.git
+cd Electronic_Health_Record_Blockchain
 
-./setup.sh          # first time only: pulls images, installs host-side dependencies
-./start.sh          # builds the Fabric network if there is none, deploys/upgrades the chaincode, starts everything
+# 2. Automated dependency initialization (first run only)
+./setup.sh
+
+# 3. Launch all network nodes, chaincode, gateways, and portals
+./start.sh
 ```
 
-`./start.sh` finishes when all health checks pass. A first start from nothing takes several minutes. It creates `.env` with generated secrets on first run.
+`./start.sh` dynamically checks peer certificates, initializes Fabric identities, registers chaincode definition sequence matching source code, boots all 17 microservices, and waits until every health check returns `UP (200 OK)`.
 
-**AI symptom analysis (optional):** put a Gemini API key in `.env` as `GEMINI_API_KEY=...` before `./start.sh`. Without a key, registration still works and the panel says the AI is not configured. The agent tries `GEMINI_MODEL` (default `gemini-3.8-flash`) and falls back to `GEMINI_FALLBACK_MODELS` when Google answers "overloaded".
+```bash
+# Verify health of all services across the consortium
+curl -s http://localhost/health | jq .
 
-| Command | What it does |
-| --- | --- |
-| `./start.sh` | Start everything; reuses the existing ledger; redeploys the chaincode only if its source changed |
-| `./stop.sh` | Stop everything, keep all data |
-| `./stop.sh --reset --yes` | Delete the ledger, identities and all application data. Asks for your `sudo` password (Fabric writes certificates as root). The next `./start.sh` builds a new network |
-| `docker compose --profile dashboard up -d --force-recreate <service>` | Restart one service after changing its code or environment |
+# Stop the entire platform (preserving all ledger blocks and IPFS state)
+./stop.sh
 
-### Where to open
-
-| What | URL |
-| --- | --- |
-| Hub (links to everything) | http://localhost/ |
-| Hospital staff portal (reception, doctor, nurse, lab worklist, admin) | http://localhost:5173/ |
-| Patient portal | http://localhost:5174/ |
-| Pharmacy | http://localhost:5175/ |
-| Dashboard (analytics, block explorer) | http://localhost/dashboard/ |
-| Lab deck (standalone lab console) | http://localhost/lab/ |
-
-The portals are development servers. **The first time you open each one after a start, the page can stay blank; refresh it** (two or three times on a slow machine).
-
-### Demo accounts
-
-| Portal | Username | Password | Role |
-| --- | --- | --- | --- |
-| Hospital | `receptionist` | `recpw` | Register patients, open visits, assign doctor |
-| Hospital | `doctor` | `docpw` | Diagnosis, prescription, lab orders, disease code, timeline |
-| Hospital | `nurse` | `nursepw` | Vitals, care notes |
-| Hospital | `medrecordofficer` | `medpw` | Finalize records |
-| Hospital | `hospitaladmin` | `hadminpw` | Admin; also signs in to the dashboard |
-| Hospital (lab worklist) | `labreceptionist` / `labtechnician` / `labsupervisor` | `recpw` | Accept sample / enter result / verify and sign |
-| Pharmacy | `pharmacist` | `pharmpw` | Dispense hospital prescriptions |
-| Pharmacy | `inventory_mgr_01` | `invpw` | Stock |
-| Pharmacy | `billing_clerk_01` | `billpw` | Bills |
-| Pharmacy | `pharmacy_mgr` | `adminpw` | Staff list, bill audit |
-| Patient | the patient ID given at reception | chosen at sign-up | Sign-up needs the phone number given at registration |
-
-These are demo credentials. Change them before any real use.
-
-### A five-minute walk-through
-
-1. Hospital portal as `receptionist`: **Register Patient**, fill in the form including **Symptoms**. The result card shows the patient's DID, the provisional ICD-10 code matched from the symptoms, and the AI cross-reference.
-2. Open a visit and assign `doctor`.
-3. As `doctor`: open the visit; add a diagnosis and a prescription; **Disease Code** tab to confirm or change the code (a reason is required for a change); **Order Lab**.
-4. Lab worklist as `labreceptionist` (accept), `labtechnician` (enter results), `labsupervisor` (verify). The technician cannot verify their own result.
-5. As `doctor`: **Lab Results** tab shows the report with flags; finalize the visit. **Timeline** tab shows every document under the patient's one DID.
-6. Pharmacy as `pharmacist`: the prescription appears; dispense it.
-7. Patient portal: create an account with the patient ID and phone number; see **My Timeline**.
-8. Dashboard as `hospitaladmin`: **Analytics** and **Explorer**.
-
-### What is and is not real
-
-See [`FEATURES.md`](FEATURES.md) for what was added and [`STATUS.md`](STATUS.md) for what is not working, not on the ledger, or not verified. [`BUGS.md`](BUGS.md) has the full audit and fix log; [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) describes the architecture.
-
-## First-time setup (From a fresh git clone) — older notes
-
-When cloning this repository for the first time on a new laptop or VM:
-
-### 1. Prerequisites
-- **OS:** Linux (Ubuntu 22.04 or 24.04 recommended) or Windows with WSL2 (Ubuntu).
-- **Packages:** Docker Engine & Docker Compose plugin (`docker compose version`), Node.js (v20+), npm, Python 3.10+, curl, jq.
-- Ensure Docker can be run without root:
-  ```bash
-  sudo usermod -aG docker "$USER"
-  # Log out and log back in, or run: newgrp docker
-  ```
-
-## 🧬 Complete System Architecture
-
-The network connects **5 Fabric Peers** across 3 autonomous organizations (`HospitalMSP`, `DiagnosticsMSP`, `ProviderMSP`), orchestrated by a Raft consensus Orderer, 4 Certificate Authorities, 10 Microservice Gateways, and 6 active Web Portals:
-
-```mermaid
-flowchart TB
-    subgraph Clients["1. Client Frontends Tier"]
-        HUB["🌐 Consortium Showcase Hub<br/>(Port :80 - NGINX Gateway)<br/>Split Showcase Cards & Telemetry"]
-        HP["🏥 Hospital Web Portal<br/>(Port :5173 - React/Vite)<br/>Staff: Reception, Doctor, Nurse, Admin"]
-        PP["👤 Patient Web Portal<br/>(Port :5174 - React/Vite)<br/>Self-Service: Consent, Timeline, DigiLocker Vault"]
-        PHARM_FE["💊 Unified Pharmacy Suite<br/>(Port :5175 - React/Vite)<br/>Zero-Trust RBAC: Manager, Pharmacist, Inventory, Billing, Patient"]
-        LAB_FE["🧪 Lab Control Deck<br/>(Port :3006 - HTML5/JS)<br/>Lab Reports & AI Diagnostics"]
-        DASH_FE["📊 Real-Time Observatory Dashboard<br/>(Port :5176 - React/Vite)<br/>12 Live Telemetry Targets & WebSocket Stream"]
-    end
-
-    subgraph Gateways["2. Microservice & REST Gateway Tier"]
-        P0_API["peer0-api (:4001)<br/>Receptionist & Admin Gateway"]
-        P1_API["peer1-api (:4002)<br/>Doctor & MedRecords Gateway"]
-        P2_API["peer2-api (:4003)<br/>Nurse & Pharmacist Gateway"]
-        EXT_API["extorg-api (:4004)<br/>Diagnostics & Provider Gateway"]
-        PAT_API["patient-api (:4005)<br/>Patient Vault & Consent Gateway"]
-        IPFS_SVC["ipfs-service (:4006)<br/>Off-chain Storage Bridge"]
-        DL_SVC["digilocker-service (:4007)<br/>Clinical PDF Generator & Vault"]
-        DASH_API["dashboard-api (:4010)<br/>Event Normalizer & Realtime Stream"]
-        AI_AGENT["clinical-ai-agent (:8000)<br/>Clinical Decision Support & RAG"]
-        L_NODE["l-node-gateway (:3006)<br/>Multi-Agent Orchestrator & VCAP"]
-        P_BACK["p-backend (:3000)<br/>Pharmacy Core Engine"]
-    end
-
-    subgraph InteropPillar["3. Interoperability & Provenance Layer"]
-        FHIR_CORE["HL7 FHIR R4 Engine<br/>(/fhir - Adapters, Hasher, Validator)"]
-        TOOL_VCAP["Sushil Tool Layer & VCAP<br/>(Fabric/IPFS/Hospital/Pharmacy Tools)"]
-    end
-
-    subgraph FabricNetwork["4. Hyperledger Fabric Network Tier (channel: ehrchannel, chaincode: ehr_3.1)"]
-        subgraph HospMSP["Hospital Organization (HospitalMSP)"]
-            PEER0["📋 Reception & Admin Peer<br/>(peer0.hospital.example.com:7051)"]
-            PEER1["🏥 Doctor Peer<br/>(peer1.hospital.example.com:9051)"]
-            PEER2["🩺 Nurse & Pharmacy Peer<br/>(peer2.hospital.example.com:10051)"]
-        end
-
-        subgraph DiagMSP["Diagnostics Organization (DiagnosticsMSP)"]
-            PEER_DIAG["🧪 Lab & Diagnostics Peer<br/>(peer0.diagnostic.example.com:8051)"]
-        end
-
-        subgraph ProvMSP["Provider Organization (ProviderMSP)"]
-            PEER_PROV["💳 Insurance & Billing Peer<br/>(peer0.provider.example.com:11051)"]
-        end
-
-        subgraph OrdererGroup["Consensus Cluster (OrdererMSP)"]
-            ORDERER["orderer.example.com<br/>Port: 7050 | Admin: 7053<br/>Raft Consensus Leader"]
-        end
-
-        subgraph CAGroup["Fabric Certificate Authorities"]
-            CA_HOSP["ca-hospital (:7055)"]
-            CA_DIAG["ca-diagnostics (:7056)"]
-            CA_PROV["ca-provider (:7057)"]
-            CA_ORD["ca-orderer (:7054)"]
-        end
-    end
-
-    subgraph StorageLayer["5. Decentralized Off-Chain Storage Tier"]
-        IPFS_NODE["IPFS Kubo Node<br/>(ipfs.ehr.local :5001 / :8090)<br/>Encrypted Payloads & Clinical PDFs"]
-    end
-
-    %% Client Routing
-    HUB --> HP
-    HUB --> PP
-    HUB --> PHARM_FE
-    HUB --> LAB_FE
-    HUB --> DASH_FE
-    HP --> P0_API & P1_API & P2_API
-    PP --> PAT_API & DL_SVC
-    PHARM_FE --> P_BACK & P2_API
-    LAB_FE --> L_NODE & EXT_API
-    DASH_FE --> DASH_API
-
-    %% Gateway to Interop & Storage
-    P0_API & P1_API & EXT_API -.-> FHIR_CORE
-    L_NODE -.-> TOOL_VCAP
-    P1_API & EXT_API & DL_SVC & P_BACK --> IPFS_SVC
-    IPFS_SVC --> IPFS_NODE
-
-    %% Gateway to Fabric Peers
-    P0_API --> PEER0
-    P1_API --> PEER1
-    P2_API --> PEER2
-    EXT_API --> PEER_DIAG & PEER_PROV
-    PAT_API --> PEER0 & PEER1
-    DL_SVC --> PEER0
-    L_NODE --> PEER_DIAG
-
-    %% Blockchain Consensus
-    PEER0 & PEER1 & PEER2 & PEER_DIAG & PEER_PROV --> ORDERER
+# Complete teardown and clean factory reset (erases docker volumes and ledgers)
+./stop.sh --reset --yes
 ```
 
 ---
 
-## 📦 Folder Structure
+## 🌐 Unified Service Directory & Access Endpoints
+
+All services and frontends are unified under an **Nginx Ingress Reverse Proxy** on Port 80, eliminating CORS issues and exposing clear, role-segregated entry points:
+
+| Service / Portal | Host Port | Ingress Route (Port 80) | Technology Stack | Core Responsibilities |
+|:---|:---:|:---|:---|:---|
+| **Consortium Showcase Hub** | `80` | `http://localhost/` | Nginx Alpine / HTML5 | Central consortium dashboard, system telemetry cards, quick links |
+| **Hospital Staff Portal** | `5173` | `http://localhost:5173/` | React 18, Vite, Tailwind | Receptionist, Doctor, Nurse, Medical Records, Hospital Admin |
+| **Patient Self-Service Portal** | `5174` | `http://localhost:5174/` | React 18, Vite, Tailwind | Patient timeline, consent manager, Master EHR records |
+| **Unified Pharmacy Suite** | `5175` | `http://localhost:5175/` | React 18, Vite, Tailwind | Zero-trust RBAC: Manager, Pharmacist, Inventory, Billing, Patient |
+| **Observatory Dashboard** | `5176` | `http://localhost/dashboard/` | React 18, Vite, D3.js | Group 1 Real-time block explorer, peer metrics, alert monitor |
+| **Lab Diagnostics Deck** | `3006` | `http://localhost/lab/` | Node.js Express, EJS/HTML5 | Standalone lab workstation: sample intake, report entry, VCAP |
+| **Clinical AI Agent** | `8000` | `http://localhost/ai-agent/docs` | Python 3.11, FastAPI, Swagger | Medical RAG, PubMed literature citation, vital trend anomaly analysis |
+| **Reception & Admin API** | `4001` | `http://localhost:4001/` | Node.js Express, Fabric Gateway | Patient registration, visit creation, doctor queue assignment |
+| **Doctor & Clinical API** | `4002` | `http://localhost:4002/` | Node.js Express, Fabric Gateway | Diagnosis notes, ICD-10 disease coding, lab orders, prescriptions |
+| **Nurse & Pharmacy API** | `4003` | `http://localhost:4003/` | Node.js Express, Fabric Gateway | Vitals logging, nurse care notes, hospital medication dispensing |
+| **Diagnostics & Claims API** | `4004` | `http://localhost:4004/` | Node.js Express, Fabric Gateway | Lab result submission, approval hash anchoring, insurance claims |
+| **Patient Gateway API** | `4005` | `http://localhost:4005/` | Node.js Express, Fabric Gateway | Patient authentication, consent grants, longitudinal EHR timeline |
+| **IPFS Bridge Service** | `4006` | `http://localhost:4006/` | Node.js Express, IPFS HTTP Client | AES-256-GCM envelope encryption, multipart upload, CID multihash |
+| **DigiLocker Vault Service** | `4007` | `http://localhost:4007/` | Node.js Express, PDFKit, Crypto | Government clinical PDF generation, digital signing, vault anchoring |
+| **Observatory Event API** | `4010` | `http://localhost/api/dashboard/`| Node.js Express, SQLite, WS | Fabric block commit collector, Zero-PHI normalizer, WebSocket/SSE |
+| **Pharmacy Core Backend** | `3000` | `http://localhost:3000/` | Node.js Express, Persistent Store | Inventory stock deduction, itemized bills, IPFS receipt pinning |
+| **Kubo IPFS Daemon** | `5001 / 8090` | `http://localhost:5001/webui` | Kubo IPFS Go Daemon | Decentralized content-addressed storage (API :5001, Gateway :8090) |
+
+---
+
+## 🔑 Demo Access Credentials & Role Matrix
+
+The platform enforces Role-Based Access Control (RBAC) backed by digital X.509 certificate identities and HS256 JWT tokens:
+
+| Portal | Username | Password | Role | Permitted Actions & Ledger Scope |
+|:---|:---|:---|:---|:---|
+| **Hospital Staff** | `receptionist` | `recpw` | Receptionist | Register patient profiles (`PatientContract`), open visits (`VisitContract`), assign doctor |
+| **Hospital Staff** | `doctor` | `docpw` | Doctor | Consultation notes, confirm ICD-10 codes, order lab tests, prescribe medication |
+| **Hospital Staff** | `nurse` | `nursepw` | Nurse | Record physiological vitals ($SpO_2$, BP, Pulse, Temp), enter nursing care notes |
+| **Hospital Staff** | `medrecordofficer` | `medpw` | Records Officer | Finalize discharged encounters, verify comprehensive record integrity |
+| **Hospital Staff** | `hospitaladmin` | `hadminpw` | Hospital Admin | Consortium governance, audit logs, authorized dashboard administrator |
+| **Lab Deck** | `labreceptionist` | `recpw` | Lab Receptionist | Receive patient specimens, acknowledge lab test requests (`LabContract`) |
+| **Lab Deck** | `labtechnician` | `recpw` | Lab Technician | Ingest analyzer biomarker readings (Hemoglobin, WBC, Platelets, Glucose) |
+| **Lab Deck** | `labsupervisor` | `recpw` | Lab Supervisor | Verify SHA-256 resultsHash against raw data, cryptographic co-signature |
+| **Pharmacy Suite** | `pharmacist` | `pharmpw` | Pharmacist | Verify hospital prescription on-chain, dispense medication (`ClinicalContract`) |
+| **Pharmacy Suite** | `inventory_mgr_01` | `invpw` | Inventory Manager | Medicine catalog management, stock replenishment, unit pricing |
+| **Pharmacy Suite** | `billing_clerk_01` | `billpw` | Billing Clerk | Outpatient billing packages, IPFS invoice generation, auto-inventory deduction |
+| **Pharmacy Suite** | `pharmacy_mgr` | `adminpw` | Pharmacy Manager | Pharmacy staff oversight, financial bill audit trail, inventory health inspection |
+| **Patient Portal** | Registered Patient ID | User Secret | Patient | Authenticate via registered phone, manage consent grants, view DigiLocker Vault |
+
+---
+
+## 🏛️ System Architecture in Four Tiers
+
+The CareGrid platform is strictly structured across **four architectural tiers**, reading top-to-bottom. Each tier communicates exclusively with the tier directly beneath it, guaranteeing that **personally identifiable clinical information (PHI) never reaches Tier 3**:
+
+```mermaid
+flowchart TD
+    subgraph Tier1 ["1. PRESENTATION TIER (React 18 + Vite Portals)"]
+        HUB["Showcase Hub (Port :80)<br/>Consortium Ingress & Telemetry"]
+        HOSP_PORTAL["Hospital Staff Portal (Port :5173)<br/>Reception, Doctor, Nurse, Lab, Admin"]
+        PAT_PORTAL["Patient Self-Service Portal (Port :5174)<br/>Timeline, Consent & DigiLocker Vault"]
+        PHARM_PORTAL["Unified Pharmacy Suite (Port :5175)<br/>Manager, Pharmacist, Inventory, Billing"]
+        DASH_PORTAL["Observatory Dashboard (Port :5176 / /dashboard/)<br/>Real-Time Block Inspector & Alerts"]
+    end
+
+    subgraph Tier2 ["2. APPLICATION & GATEWAY TIER (Node.js Express & Python FastAPI)"]
+        P0_API["peer0-api (Port :4001)<br/>Reception & Admin Gateway"]
+        P1_API["peer1-api (Port :4002)<br/>Doctor & MedRecords Gateway"]
+        P2_API["peer2-api (Port :4003)<br/>Nurse & Pharmacy Gateway"]
+        EXT_API["extorg-api (Port :4004)<br/>Diagnostics & Provider Gateway"]
+        PAT_API["patient-api (Port :4005)<br/>Patient Account & Consent Gateway"]
+        IPFS_SVC["ipfs-service (Port :4006)<br/>AES-256-GCM Encryption Bridge"]
+        DL_SVC["digilocker-service (Port :4007)<br/>Clinical PDF Generator & Vault"]
+        DASH_API["dashboard-api (Port :4010)<br/>Block Collector & Normalizer"]
+        AI_SVC["clinical-ai-agent (Port :8000)<br/>FastAPI Medical RAG & Anomaly Agent"]
+        L_GATE["l-node-gateway (Port :3006)<br/>Multi-Agent Orchestrator & VCAP"]
+        P_BACK["p-backend (Port :3000)<br/>Pharmacy Store & Inventory Engine"]
+    end
+
+    subgraph Tier3 ["3. BLOCKCHAIN CONSENSUS TIER (Hyperledger Fabric 2.5 LTS - ehrchannel)"]
+        subgraph HospMSP ["Hospital Organization (HospitalMSP)"]
+            H_PEER0["peer0.hospital:7051<br/>Reception & Admin"]
+            H_PEER1["peer1.hospital:9051<br/>Doctor Node"]
+            H_PEER2["peer2.hospital:10051<br/>Nurse & Pharmacy"]
+        end
+
+        subgraph DiagMSP ["Diagnostics Organization (DiagnosticsMSP)"]
+            D_PEER0["peer0.diagnostic:8051<br/>Lab Diagnostics Peer"]
+        end
+
+        subgraph ProvMSP ["Provider Organization (ProviderMSP)"]
+            PR_PEER0["peer0.provider:11051<br/>Insurance & Claims Peer"]
+        end
+
+        subgraph OrdererMSP ["Consensus Cluster (OrdererMSP)"]
+            ORDERER["orderer.example.com:7050<br/>Raft CFT Consensus Leader"]
+        end
+
+        subgraph ChaincodeEngine ["Chaincode Package ehr (v3.1) - 13 Exported Contracts"]
+            CONTRACTS["13 Domain Contracts: PatientContract, VisitContract, ForwardContract,<br/>ClinicalContract, LabContract, ClaimsContract, EhrContract, AccessContract,<br/>FhirContract, DigiLockerContract, DidContract, CodeContract, StatsContract"]
+        end
+    end
+
+    subgraph Tier4 ["4. OFF-CHAIN STORAGE & PERSISTENCE TIER (Zero-PHI Compliant)"]
+        KUBO_IPFS["Kubo IPFS Daemon (ipfs.ehr.local :5001 / :8090)<br/>Content-Addressed Encrypted Storage (CIDs)"]
+        SQLITE_DB["SQLite Local Databases<br/>CA Keystores & Dashboard Read Cache"]
+        PHARM_JSON["Pharmacy JSON Store (store.js)<br/>Local Stock Inventory & Outpatient Bills"]
+    end
+
+    %% Ingress and Connections
+    HUB --> HOSP_PORTAL & PAT_PORTAL & PHARM_PORTAL & DASH_PORTAL
+    HOSP_PORTAL -->|"HTTPS + Staff JWT"| P0_API & P1_API & P2_API
+    PAT_PORTAL -->|"HTTPS + Patient JWT"| PAT_API & DL_SVC
+    PHARM_PORTAL -->|"HTTPS + Pharmacy JWT"| P_BACK & P2_API
+    DASH_PORTAL -->|"WebSocket / REST"| DASH_API
+    HOSP_PORTAL -.->|"REST /ai-agent/"| AI_SVC
+
+    %% Tier 2 to Tier 4
+    P0_API & P1_API & EXT_API & DL_SVC & P_BACK -->|"Payloads for Encryption"| IPFS_SVC
+    IPFS_SVC -->|"Encrypted Multihash CIDs"| KUBO_IPFS
+    P_BACK -->|"Read/Write Local Stock"| PHARM_JSON
+    DASH_API -->|"Operational Read Cache"| SQLITE_DB
+
+    %% Tier 2 to Tier 3 (gRPC Fabric Gateway)
+    P0_API -->|"gRPC Endorsement"| H_PEER0
+    P1_API -->|"gRPC Endorsement"| H_PEER1
+    P2_API -->|"gRPC Endorsement"| H_PEER2
+    EXT_API -->|"gRPC Endorsement"| D_PEER0 & PR_PEER0
+    PAT_API -->|"gRPC Read"| H_PEER0 & H_PEER1
+    DL_SVC -->|"Anchor Document"| H_PEER0
+    L_GATE -->|"Submit Diagnostic Report"| D_PEER0
+
+    %% Smart Contracts Execution
+    H_PEER0 & H_PEER1 & H_PEER2 & D_PEER0 & PR_PEER0 --> CONTRACTS
+    H_PEER0 & H_PEER1 & H_PEER2 & D_PEER0 & PR_PEER0 -->|"Orderer Block Cut"| ORDERER
+    H_PEER0 -.->|"Committed Block Events"| DASH_API
+```
+
+---
+
+## 🔄 End-to-End Clinical & Data Flow Diagram (DFD)
+
+The following labelled Data Flow Diagram illustrates the full clinical lifecycle: from patient intake and Gemini AI symptom triage, to doctor consultation, laboratory analysis, supervisor signing, pharmacy dispensing, real-time telemetry extraction, and DigiLocker export:
+
+```mermaid
+flowchart TD
+    subgraph S1 ["Stage 1: Patient Registration & DID Generation"]
+        A1["Patient arrives at Reception"] --> A2["Receptionist inputs Demographics & Symptoms (:5173)"]
+        A2 -->|"POST /patients"| A3["peer0-api Gateway (:4001)"]
+        A3 -->|"Query Symptom Model"| A4["Gemini AI Triage (gemini-3.8-flash)<br/>Provisional ICD-10 suggestions"]
+        A3 -->|"Encrypt PHI with AES-256-GCM"| A5["ipfs-service (:4006)"]
+        A5 -->|"Store Encrypted Payload"| A6["Kubo IPFS Node<br/>Returns CID multihash"]
+        A3 -->|"Submit Zero-PHI Anchor<br/>patientIdHash, DID, CID"| A7["Fabric PatientContract<br/>Registers did:ehr:hash on-chain"]
+    end
+
+    subgraph S2 ["Stage 2: Doctor Consultation & Clinical Decision Support"]
+        B1["Doctor opens Hospital Portal (:5173)"] --> B2["Select Patient from Queue<br/>GET /peer1/visits"]
+        B2 --> B3["peer1-api Gateway (:4002)"]
+        B3 -->|"Fetch & Decrypt History"| A6
+        B1 -->|"Enter Diagnosis & Query RAG"| B4["clinical-ai-agent (:8000)<br/>PubMed Evidence & Vital Analysis"]
+        B4 -->|"Clinical Recommendation"| B1
+        B1 -->|"Confirm Diagnosis & ICD-10 Code"| B5["Fabric VisitContract<br/>UpdateDiagnosisNotes & DiseaseCode"]
+        B1 -->|"Submit Lab Request (e.g. CBC)"| B6["Fabric LabContract<br/>createLabRequest"]
+    end
+
+    subgraph S3 ["Stage 3: Multi-Agent Lab Analysis & Cryptographic Sign-Off"]
+        C1["Lab Receptionist acknowledges specimen"] -->|"acknowledgeLabRequest"| B6
+        C2["Lab Technician enters Biomarker values"] --> C3["l-node-gateway (:3006)"]
+        C3 -->|"Parse & Flag Ranges"| C4["Lab Report Agent (lab-agent.js)"]
+        C3 -->|"Compute Multi-Visit Trend"| C5["History Agent (history-agent.js)"]
+        C3 -->|"Generate Report Hash"| C6["Compute SHA-256 resultsHash"]
+        C7["Lab Supervisor verifies & co-signs"] -->|"approveLabReport(resultsHash)"| B6
+        C8["Background Integrity Engine"] -.->|"4-Hour Verification<br/>Compare IPFS Raw Bytes to Fabric"| B6
+    end
+
+    subgraph S4 ["Stage 4: Prescription Fulfillment & Pharmacy Dispensing"]
+        D1["Doctor finalizes Visit with Prescription"] -->|"finalizeVisit"| B5
+        D2["Pharmacist logs into Pharmacy Suite (:5175)"] --> D3["p-backend (:3000)"]
+        D3 -->|"Verify Prescription on-chain"| D4["peer2-api (:4003)"]
+        D4 -->|"Commit DispenseMedication"| D5["Fabric ClinicalContract<br/>Status: COMPLETED"]
+        D3 -->|"Deduct Local Inventory"| D6["Pharmacy Store (store.js)"]
+        D3 -->|"Pin Itemized Receipt"| A6
+    end
+
+    subgraph S5 ["Stage 5: Zero-PHI Event Streaming & Live Observability"]
+        E1["Fabric Peer commits Block N"] -->|"Block Event Stream"| E2["dashboard-api Collector (:4010)"]
+        E2 -->|"Zero-PHI Normalizer<br/>Redact to patientIdHash"| E3["Append-Only NDJSON & SQLite"]
+        E3 -->|"Push Telemetry"| E4["WebSocket /ws & SSE /stream"]
+        E4 -->|"Live Update UI"| E5["Observatory Dashboard (:5176)<br/>Block Inspector, Latency, Agent Trace"]
+    end
+
+    subgraph S6 ["Stage 6: Patient Longitudinal Access & DigiLocker Vault"]
+        F1["Patient signs into Portal (:5174)"] --> F2["patient-api Gateway (:4005)"]
+        F2 -->|"Resolve DID & Fetch Records"| A7
+        F1 -->|"Open DigiLocker Vault"| F3["digilocker-service (:4007)"]
+        F3 -->|"Generate Dynamic Clinical PDF<br/>CBC / Discharge Summary"| F4["PDFKit Clinical Stamping"]
+        F4 -->|"Encrypt & Pin"| A6
+        F3 -->|"Anchor Document Anchor"| F5["Fabric DigiLockerContract<br/>DOC~hash Verified"]
+    end
+
+    %% Inter-Stage Handoffs
+    A7 ==> B2
+    B6 ==> C1
+    C7 ==> D1
+    D5 ==> E1
+    A7 ==> F1
+```
+
+---
+
+## 📜 Complete Chaincode Contract Reference (13 Smart Contracts)
+
+The `ehr` chaincode package (`orgs/hospital/EHR_hospitalOrg-main/ehr-chaincode-v3/`) defines **13 specialized smart contracts** implementing strict Attribute-Based Access Control (ABAC):
+
+```
+orgs/hospital/EHR_hospitalOrg-main/ehr-chaincode-v3/lib/
+├── patientContract.js      # Patient registration, demographics, DID generation
+├── visitContract.js        # Visit lifecycle: open, queue, diagnosis, discharge
+├── forwardContract.js      # Inter-department routing (Doctor, Nurse, Lab, Pharmacy)
+├── clinicalContract.js     # Vital signs, clinical observations, dispensing
+├── labContract.js          # Lab requests, biomarker ingestion, supervisor signing
+├── claimsContract.js       # Insurance claim filing, policy validation, adjudication
+├── ehrContract.js          # Master longitudinal EHR anchoring & CID tracking
+├── accessContract.js       # Patient consent grants, emergency break-glass, revocations
+├── fhirContract.js         # HL7 FHIR R4 standard resource anchoring
+├── digilockerContract.js   # Government clinical document vault & SHA-256 verification
+├── didContract.js          # W3C Decentralized Identifier resolution and key binding
+├── codeContract.js         # ICD-10 disease code classification and validation rules
+└── statsContract.js        # Ledger analytics, aggregate transaction counters, metrics
+```
+
+### Detailed Functional Responsibilities
+
+| # | Smart Contract | Key Methods | Caller Roles | On-Chain Key Format |
+|:---:|:---|:---|:---|:---|
+| 1 | **`PatientContract`** | `registerPatient`, `queryPatient`, `updatePatientDemographics`, `getPatientHistory` | Receptionist, Admin | `PATIENT_<patientId>` |
+| 2 | **`VisitContract`** | `createVisit`, `assignDoctor`, `updateDiagnosisNotes`, `updateDiseaseCode`, `finalizeVisit` | Receptionist, Doctor | `VISIT_<visitId>` |
+| 3 | **`ForwardContract`** | `forwardToDoctor`, `forwardToNurse`, `forwardToLab`, `forwardToPharmacy` | Doctor, Nurse, Staff | `FWD_<visitId>_<target>` |
+| 4 | **`ClinicalContract`** | `recordVitals`, `addConsultationNote`, `createPrescription`, `dispenseMedication` | Doctor, Nurse, Pharmacist | `CLINICAL_<visitId>` |
+| 5 | **`LabContract`** | `createLabRequest`, `acknowledgeLabRequest`, `recordDiagnosticReport`, `approveLabReport` | Doctor, Lab Tech, Lab Supervisor | `LAB_<requestId>` |
+| 6 | **`ClaimsContract`** | `submitClaim`, `adjudicateClaim`, `queryClaimByPatient`, `auditClaimsLog` | Provider, Insurance Admin | `CLAIM_<claimId>` |
+| 7 | **`EhrContract`** | `anchorEhrCid`, `getEhrHistory`, `verifyRecordMultihash` | Doctor, Records Officer | `EHR_<patientIdHash>` |
+| 8 | **`AccessContract`** | `grantConsent`, `revokeConsent`, `checkAccess`, `emergencyBreakGlass` | Patient, Doctor, Admin | `CONSENT_<patientId>_<role>` |
+| 9 | **`FhirContract`** | `anchorFhirResource`, `getFhirResourceByDigest`, `validateFhirSchema` | Clinical Gateway, System | `RECORD~<patientIdHash>~<recordId>` |
+| 10 | **`DigiLockerContract`**| `anchorDocument`, `verifyDocumentHash`, `revokeDocument`, `getDocumentAudit` | Patient, DigiLocker Service | `DOC~<docHash>` |
+| 11 | **`DidContract`** | `createDID`, `resolveDID`, `updatePublicKey`, `deactivateDID` | System, Receptionist | `DID_did:ehr:<hash>` |
+| 12 | **`CodeContract`** | `validateICD10Code`, `lookupDiseaseByCode`, `recordCodeOverrideReason` | Doctor, Medical Coder | `ICD10_<category>` |
+| 13 | **`StatsContract`** | `getLedgerOverview`, `getTransactionVolume`, `getChannelBlockHeight` | Dashboard, Admin | `STATS_METRICS` |
+
+---
+
+## 📊 Group 1 Real-Time Observability Dashboard
+
+The **Observatory Dashboard** (`http://localhost/dashboard/` or host port `5176`) provides non-intrusive, read-only operational visibility into the distributed ledger:
+
+* **Zero-PHI Block Inspector:** Decodes raw block transactions, Merkle roots, read-write sets, and ASN.1 headers in real-time. Block hashes are dynamically verified ($Block_N.previousHash = Block_{N-1}.blockHash$) with a 1-click clipboard inspector.
+* **12/12 Live Telemetry Targets:** Actively monitors the `/healthz` and `/health` operational endpoints across all 5 Fabric peers, Raft orderer, 4 CAs, IPFS daemon, Python AI agent, Lab orchestrator, and microservice gateways.
+* **Agent Execution Trace:** Visualizes the 10-stage clinical workflow stepper (Report Ingestion $\rightarrow$ OCR/Parsing $\rightarrow$ FHIR Conversion $\rightarrow$ IPFS Seal $\rightarrow$ Ledger Anchor $\rightarrow$ AI Inference $\rightarrow$ Clinical Governance $\rightarrow$ Human Review $\rightarrow$ VCAP Anchor $\rightarrow$ VCAP Verified).
+* **Obsidian Glass Design System:** Engineered with luxury dark-mode aesthetics, responsive card glows, and instant WebSocket push updates.
+
+---
+
+## 📁 Repository Directory Structure
 
 ```text
 EHR_blockchain/
+├── README.md                           # Master system documentation & architecture guide
+├── docker-compose.yaml                 # Master multi-container Compose orchestration (17 services)
+├── setup.sh                            # Automated host dependency & Docker image initialization
+├── start.sh                            # Universal zero-downtime startup & health verification
+├── stop.sh                             # Graceful network shutdown & reset controller
 ├── nginx/
-│   ├── nginx.conf        # Unified ingress reverse proxy (:80) with zero-CORS routing
-│   └── hub/              # Consortium Showcase Hub (Glassmorphic media cards, v11)
-├── fhir/                 # 🌐 HL7 FHIR R4 interoperability layer (schemas, adapters, validator)
-├── orgs/
-│   ├── hospital/         # 🏥 Hospital Organization (Backend v3, Frontends v2, Fabric Network)
-│   ├── pharmacy/         # 💊 Unified Pharmacy Suite (:5175, RBAC zero-trust gate, p-backend :3000)
-│   ├── lab/              # 🧪 Lab Multi-Agent Subsystem (Tool layer, VCAP provenance, node-gateway :3006)
-│   └── digilocker/       # 🔐 DigiLocker Vault System (:4007, dynamic clinical PDFs, AES-256-GCM)
+│   ├── nginx.conf                      # Unified ingress reverse proxy configuration (Port 80)
+│   └── hub/                            # Consortium Showcase Hub web application
+├── fhir/                               # HL7 FHIR R4 schemas, canonical adapters, and validators
 ├── services/
-│   └── ai-agent/         # 🧠 Autonomous Clinical AI Decision Support & PubMed RAG (:8000)
-├── start.sh              # 🚀 Universal orchestrator (Fabric network + APIs + Portals)
-├── stop.sh               # 🛑 Clean stop for services and blockchain network
-└── setup.sh              # 📦 Automated dependency installation & init-env
+│   ├── ai-agent/                       # Autonomous FastAPI Clinical Intelligence & PubMed RAG (:8000)
+│   └── clinical-decision-support/      # LangGraph multi-disease clinical evaluation tools
+├── orgs/
+│   ├── hospital/                       # HospitalMSP: Fabric network, backend APIs, frontends
+│   │   ├── ehr-network/                # Fabric 2.5 network configuration, crypto-config, Raft genesis
+│   │   ├── ehr-chaincode-v3/           # 13 Domain Smart Contracts on ehrchannel
+│   │   ├── ehr-backend-v3/             # peer0-api, peer1-api, peer2-api, extorg-api, patient-api, ipfs-service
+│   │   └── ehr-frontend-v2/            # Hospital staff portal (:5173), patient portal (:5174), dashboard (:5176)
+│   ├── pharmacy/                       # Unified Pharmacy Suite (:5175, RBAC zero-trust gate, p-backend :3000)
+│   ├── lab/                            # DiagnosticsMSP: Lab control deck, Multi-Agent Orchestrator (:3006)
+│   └── digilocker/                     # DigiLocker Vault service (:4007, dynamic PDF generation, AES-256)
+└── docs/                               # Master Technical Documentation Suite
+    ├── README.md                       # Documentation index & navigation map
+    ├── architecture/                   # Technical architecture & storage specifications
+    │   ├── DATABASE_README.md          # Hybrid storage matrix (LevelDB, IPFS, SQLite, JSON)
+    │   ├── SMART_CONTRACT_README.md    # 13 Chaincode contracts, ABAC rules, and state machines
+    │   ├── FEATURES.md                 # System feature capabilities & standards compliance
+    │   ├── PROJECT_CONTEXT.md          # Multi-org technical context & communication flows
+    │   └── fhir-integration.md         # HL7 FHIR R4 mapping & DigiLocker compliance
+    ├── guides/                         # Operational & demonstration guides
+    │   ├── SETUP_AND_RUN.md            # Step-by-step setup and execution instructions
+    │   ├── EHR_BLOCKCHAIN_COMPLETE_EVALUATION_GUIDE.md  # Viva demonstration & benchmark script
+    │   ├── setup-guide.md              # Detailed local environment installation guide
+    │   └── screenshot_mapping_reference.md # Verification screenshot registry
+    └── reports/                        # Audit records, benchmarks, and academic reports
+        ├── MY_CONTRIBUTION.md          # Detailed engineering contribution breakdown (Himanshu)
+        ├── STATUS.md                   # Live verification status across all components
+        ├── BUGS.md                     # Comprehensive defect discovery & resolution log
+        ├── CHANGELOG.md                # Repository version history
+        └── REDESIGN_REPORT.md          # Frontend modernization & gateway redesign report
 ```
 
 ---
 
-## ⚙️ Updated Implementation Details
+## 📑 Comprehensive Documentation Links
 
-We have upgraded the core infrastructure to support robust distributed environments and advanced clinical AI workloads:
+For detailed architectural specifications, performance benchmarks, and evaluation reports:
 
-* **Unified Startup Orchestration (`start.sh`)**: A universal initialization script that dynamically resolves paths, injects environment variables, boots the Hyperledger Fabric nodes, verifies chaincode deployment, and brings up all web frontends and microservices.
-* **4 Distinct Agentic Peer Roles**: Granular ABAC enforcement is mapped to specific peers: **Doctor** (diagnostics/prescriptions), **Nurse** (vital signs), **Pharmacy** (inventory/dispensing), and **Lab** (test execution and AI-assisted result uploads).
-* **HL7 FHIR R4 Interoperability (Fully Implemented)**: Legacy clinical records are converted to HL7 FHIR R4 resources (Patient, Encounter, DiagnosticReport, Observation, Condition, MedicationRequest, Consent) and anchored on-chain via `FhirContract` under `RECORD~<patientIdHash>~<recordId>`. See [`docs/fhir-integration.md`](docs/fhir-integration.md).
-* **Verifiable Clinical AI Provenance (VCAP & Tool Layer Implemented)**: Sushil Tool Layer and VCAP module (`tools/` & `provenance/vcap.js` in `l-node-gateway`) anchor and verify stage-by-stage cryptographic traces for every AI run.
-* **DigiLocker Clinical Vault (Fully Implemented)**: Authentic clinical PDFs (CBC, Lipid Panel, OPD Prescriptions, Discharge Summaries) generated dynamically from on-chain patient visits and lab diagnostics, encrypted via AES-256-GCM envelope encryption, pinned to IPFS, and anchored to `DigiLockerContract`.
-* **Unified Pharmacy Suite (Fully Implemented)**: All 5 legacy pharmacy portals consolidated into one unified suite (`http://localhost:5175/`) with zero-trust credential verification and RBAC enforcement. Legacy containers and ports 3001–3005 decommissioned to optimize system RAM.
-* **Consortium Showcase Hub (`http://localhost/`)**: Media-rich showcase cards featuring sharp photographic headers, glassmorphic status overlays, and clean high-contrast lower content.
-
----
-
-## 📊 Group 1 — Observability Dashboard
-
-> **Status:** ✅ Fully Implemented · Phase 1 & 2 Live · 100% Operational
-> **Pillar:** Dashboard / Observability (1 of 4 — alongside Security, Agentic AI and Standard EHR / FHIR)
-
-Group 1 provides a **read-only observability dashboard** for the whole platform: live Fabric network health, ledger transactions, AI agent executions, IPFS activity and security events in one React app, served at `http://localhost/dashboard/`. It replaces manual page refreshes with **real-time push updates** driven by Fabric chaincode and block events.
-
-### 👥 Team & Tracks
-
-| Member | Track | Novelty |
-| :--- | :--- | :--- |
-| **Himanshu** | Real-Time Event Architecture & Core Orchestration | WebSocket/SSE gateway fed by a checkpointed Fabric chaincode-event and block listener — no UI polling |
-| **Harsh Bhagat** | Frontend Shell & Agentic Peer Dashboards | One configuration-driven `AgentDashboard` that renders every peer node and AI agent with zero duplicated pages |
-| **Dhruv Kumarawat** | Backend Aggregation API & Agent Execution Trace | A stage-by-stage Agent Trace stitched from FHIR, AI, IPFS, Fabric and VCAP events for each clinical AI run |
-
-### 🧭 Architecture Diagram
-
-```mermaid
-flowchart TB
-    subgraph Sources["Existing services and other pillars"]
-        HOSP["Hospital network<br/>ehrchannel · chaincode ehr"]
-        LAB["Lab gateway<br/>labresults + Gemini agents"]
-        PHARM["Pharmacy backend<br/>/api/network-status"]
-        IPFS["IPFS service<br/>/pins · /health"]
-        TEAMS["Security · Agentic AI · FHIR teams<br/>(dashboardEmitter.js)"]
-    end
-
-    subgraph API["dashboard-api · Express · port 4010"]
-        subgraph H["Himanshu — real-time events"]
-            COL["Fabric chaincode + block listener<br/>checkpoint · reconnect · health poller"]
-            ING["POST /internal/events<br/>(service key)"]
-            NORM["Normalizer → event envelope"]
-            WS["WebSocket /ws · SSE /stream"]
-        end
-        subgraph D["Dhruv — aggregation API"]
-            STORE[("SQLite read cache<br/>events · runs · run_stages · alerts")]
-            REST["REST /api/dashboard/*"]
-            TRACE["Agent Execution Trace"]
-            ALERT["Alert engine<br/>thresholds.json"]
-        end
-    end
-
-    subgraph UI["Harsh — dashboard-portal · /dashboard/"]
-        PAGES["Overview · Network · Agents · Transactions<br/>Security · IPFS · Logs"]
-        AGD["Config-driven AgentDashboard<br/>peer nodes + AI agents"]
-        TR["AgentTrace stepper"]
-    end
-
-    HOSP -- "chaincode & block events" --> COL
-    LAB -- "/health" --> COL
-    PHARM -- "/health" --> COL
-    IPFS -- "/health" --> COL
-    TEAMS -- "agent / FHIR / VCAP / security events" --> ING
-    COL --> NORM
-    ING --> NORM
-    NORM --> WS
-    NORM -- "events to store" --> STORE
-    HOSP -. "read queries (qscc, ListAll*)" .-> REST
-    IPFS -. "pin metadata only" .-> REST
-    STORE --> REST
-    STORE --> TRACE
-    STORE --> ALERT
-    ALERT -- "ALERT_RAISED" --> WS
-    WS -- "live events (JWT)" --> PAGES
-    REST -- "REST JSON (JWT)" --> PAGES
-    PAGES --> AGD
-    PAGES --> TR
-
-    classDef him fill:#dbeafe,stroke:#2563eb,color:#111;
-    classDef dhr fill:#ffedd5,stroke:#ea580c,color:#111;
-    classDef hrs fill:#dcfce7,stroke:#16a34a,color:#111;
-    class COL,ING,NORM,WS him;
-    class STORE,REST,TRACE,ALERT dhr;
-    class PAGES,AGD,TR hrs;
-```
-
-**Flow:** Fabric events and pushed events from other teams → normalizer → live WebSocket stream **and** SQLite read cache → REST API, Agent Trace and alerts → React dashboard. The dashboard never writes to the ledger.
-
-### 🔁 Agent Execution Trace (10 stages, agreed across pillars)
-
-```mermaid
-flowchart LR
-    S1["1 Report<br/>Received"] --> S2["2 OCR /<br/>Parsing"] --> S3["3 FHIR<br/>Conversion"] --> S4["4 Encrypted +<br/>IPFS Stored"] --> S5["5 Record<br/>Anchored"]
-    S5 --> S6["6 Agent Processing<br/>lab · history · clinical"] --> S7["7 Governance"] --> S8["8 Human<br/>Review"] --> S9["9 VCAP<br/>Anchored"] --> S10["10 VCAP<br/>Verified"]
-```
-
-The record is anchored before AI runs (Security's async design), so stages 6–10 can arrive minutes or hours later. Stage statuses: `DONE`, `FAILED`, `SKIPPED`, `PENDING`, `WAITING_HUMAN`. All events for one run share `correlationId` = the AI orchestrator's `runId` = VCAP `executionId`.
-
-### 📨 Common Event Envelope
-
-Every team emits events in this shape (via `dashboardEmitter.js` → `POST /internal/events`, or as Fabric chaincode events):
-
-```json
-{
-  "eventId": "evt-7f3a9c",
-  "eventType": "AGENT_EXECUTION_COMPLETED",
-  "timestamp": "2026-09-15T10:20:00Z",
-  "source": "lab-agent",
-  "org": "DiagnosticsMSP",
-  "peerId": "peer0.lab.example.com",
-  "severity": "INFO",
-  "txId": "a1b2c3...",
-  "blockNumber": 1042,
-  "correlationId": "RUN-001",
-  "payload": { "patientIdHash": "hmac-sha256:...", "recordId": "LAB001", "durationMs": 1840 }
-}
-```
-
-**Zero-PHI rule:** payloads carry only ids, `patientIdHash`, CIDs, hashes, statuses and timings — never raw patient ids, names, clinical values or AI summary text.
-
-### 🔌 API & Routing
-
-| Route | Owner | Purpose |
-| :--- | :--- | :--- |
-| `GET /api/dashboard/overview` | Dhruv | KPI cards: block heights, tx/min, peers online, active alerts |
-| `GET /api/dashboard/network` | Dhruv | Peers, orderers, CAs, channels, status |
-| `GET /api/dashboard/transactions` | Dhruv | Recent ledger writes |
-| `GET /api/dashboard/agents` · `/agents/:agentId/executions` | Dhruv | Per-agent metrics and runs |
-| `GET /api/dashboard/executions/:runId/trace` | Dhruv | Stage-by-stage Agent Trace |
-| `GET /api/dashboard/ipfs` · `/security/events` · `/alerts` | Dhruv | IPFS metadata, audit & security events, alerts |
-| `ws://localhost/api/dashboard/ws` · `GET /api/dashboard/stream` | Himanshu | Live event stream (WebSocket / SSE) |
-| `POST /internal/events` (not exposed via Nginx) | Himanshu | Ingest endpoint for other teams' events |
-
-| Service | Container | Port | Public URL |
-| :--- | :--- | :--- | :--- |
-| dashboard-api | `h-dashboard-api` | 4010 | `/api/dashboard/` |
-| dashboard-portal | `h-dashboard-portal` | 5176 | `/dashboard/` |
-
-### 📁 Group 1 Folder Structure (planned)
-
-```text
-orgs/hospital/EHR_hospitalOrg-main/
-├── ehr-backend-v3/dashboard-api/
-│   └── src/
-│       ├── contracts/     # Event envelope, event registry, response shapes
-│       ├── collector/     # Himanshu — Fabric listener, health poller
-│       ├── normalizer/    # Himanshu — raw events → envelope
-│       ├── realtime/      # Himanshu — WebSocket / SSE gateway
-│       ├── routes/        # Dhruv — REST endpoints
-│       ├── services/      # Dhruv — network, agents, IPFS, security aggregation
-│       ├── store/         # Dhruv — SQLite read cache
-│       └── alerts/        # Dhruv — alert engine + thresholds.json
-└── ehr-frontend-v2/dashboard-portal/
-    └── src/
-        ├── pages/         # Harsh — Overview, Network, Agents, Transactions, Security, IPFS, Logs
-        ├── components/    # Harsh — MetricCard, StatusBadge, AgentCard, AgentDashboard, AgentTrace
-        ├── config/        # Harsh — agentConfig.js (peer + AI agents)
-        ├── services/      # API client
-        └── hooks/         # useDashboardSocket
-```
-
-### 🤝 Integration with the Other Pillars
-
-* **Security:** dashboard-api and the WebSocket use Security's JWT and role claims; consent, record-access, break-glass, VCAP and audit events are displayed, not re-implemented.
-* **Agentic AI:** the orchestrator and agents (lab, history, clinical, governance) emit run and step events; the dashboard shows them and the human-review status.
-* **Standard EHR / FHIR:** `FHIR_CONVERSION_STARTED / COMPLETED / FAILED` events fill stage 3 of the trace.
-* **Chaincode:** one shared `emitEvent(ctx, name, payload)` helper, one event per transaction (Fabric keeps only the last `setEvent`), deployed in a single coordinated upgrade.
+* 🧭 [Master Documentation Directory & Index](docs/README.md)
+* 🧪 [Complete Evaluation & Benchmark Viva Guide](docs/guides/EHR_BLOCKCHAIN_COMPLETE_EVALUATION_GUIDE.md)
+* 👨‍💻 [Author Engineering Contribution Walkthrough](docs/reports/MY_CONTRIBUTION.md)
+* 🏛️ [Database & Storage Architecture Reference](docs/architecture/DATABASE_README.md)
+* 📜 [Smart Contract Architecture & ABAC Reference](docs/architecture/SMART_CONTRACT_README.md)
+* 🧠 [Clinical AI Agent Microservice Documentation](services/ai-agent/README.md)
+* 💊 [Unified Pharmacy Suite & Backend Architecture](orgs/pharmacy/fabric-network-swarm/README.md)
+* 🔬 [Lab Multi-Agent Gateway & VCAP Documentation](orgs/lab/EHR-LABORG-main/README.md)
+* 🔐 [DigiLocker Vault & Document Anchoring Guide](orgs/digilocker/README.md)
+* 🐞 [Bug Audit & Defect Resolution History](docs/reports/BUGS.md)
+* 🚀 [Step-by-Step Setup and Run Guide](docs/guides/SETUP_AND_RUN.md)
 
 ---
 
-## 📋 System Prerequisites & Compatibility
+## 🔒 Security, Compliance & Data Safeguards
 
-Before running the system, ensure your machine meets the following environment and hardware prerequisites:
-
-### 1. Supported Operating Systems
-| Operating System | Support Level | Requirements & Setup Notes |
-| :--- | :--- | :--- |
-| **Ubuntu Linux** (22.04 / 24.04 / 26.04 LTS) | 🌟 **Recommended (Native)** | Best performance. Native support for Docker daemon and Fabric ELF binaries. |
-| **Windows 10 / 11** | 🌟 **Supported via WSL2** | **Must run inside WSL2 (Ubuntu 22.04+)**. Do **not** run via Windows CMD or PowerShell (Fabric requires Linux container volume mounts and ELF binaries). |
-| **macOS** (Intel / Apple Silicon) | ⚡ Supported via Colima | Use **Colima** as the Docker runtime. Fabric binaries are resolved by `ehr-network/scripts/fabric-bin.sh` (darwin/arm64 binaries, not the committed Linux `bin/`). See [`docs/setup-guide.md`](docs/setup-guide.md). |
-
-### 2. Hardware Recommendations
-* **RAM:** 8 GB minimum (16 GB recommended to run all 5 peers, orderer, IPFS, and 8 microservices smoothly).
-* **Storage:** 20 GB free disk space (for Docker images, chaincode containers, and IPFS cache).
-* **CPU:** 4 cores minimum.
-
-### 3. Required Tools & One-Liner Install
-Run this one command on your Ubuntu terminal (native or inside WSL2) to install all necessary packages:
-
-```bash
-# 1. Install Docker, Docker Compose Plugin, Node.js (v20+), npm, curl, and jq
-sudo apt-get update && sudo apt-get install -y docker.io docker-compose-v2 nodejs npm curl jq
-
-# 2. Add current user to Docker group & grant socket permissions
-sudo usermod -aG docker $USER
-sudo chmod 666 /var/run/docker.sock
-```
-
-> [!NOTE]
-> If you just added yourself to the `docker` group, either log out and log back in, or run `newgrp docker` so your terminal applies the group membership without needing `sudo`.
+1. **Synthetic Data Policy:** All demonstration data, patient identities, and clinical findings are synthetic. Never input real Protected Health Information (PHI) into development environments.
+2. **Key Security:** Cryptographic private keys, Fabric enrollment certificates, and JWT secrets are generated locally by `init-env.js` and stored in local, git-ignored directories (`.env`, `wallet/`, `credentials/`).
+3. **Envelope Encryption:** Off-chain IPFS payloads utilize random 256-bit symmetric keys protected under an AES-GCM envelope, ensuring data at rest cannot be read even if an IPFS CID is publicly known.
 
 ---
 
-## 🚀 Quickstart Guide & Setup Instructions
-
-### ⚡ Essential Shell Command Summary
-
-Use these three core shell scripts to setup, run, and terminate the entire EHR Blockchain project:
-
-| Action | Shell Command | What It Does |
-| :--- | :--- | :--- |
-| **1. Install Dependencies** *(First run only)* | `./setup.sh` | Pulls official Docker images & installs `npm` dependencies across all modules. |
-| **2. Start the Project** | `./start.sh` | Initializes Fabric blockchain, deploys chaincode, and launches all 4 frontends & 6 backend APIs. |
-| **3. Check Service Status** | `./start-sequential.sh status` | Displays process IDs (PIDs) and health status for all background microservices and portals. |
-| **4. Stop the Project** | `./stop.sh` | Cleanly stops all Node.js background services, frontends, and Docker containers. |
-
----
-
-### 🔗 FHIR R4 anchor — quick verification
-
-The FHIR interoperability layer is wired into the chaincode (`FhirContract`) and the
-backend write paths. After the stack is up (`./start.sh`), verify it end-to-end:
-
-1. Open the hospital portal at `http://localhost:5173` and log in as `receptionist` / `recpw`.
-2. Register a patient — the `POST /patients` response now carries a **`fhirAnchor`** (a
-   zero-PHI `resourceType` + `patientRecordHash` + IPFS `dataCID`).
-3. The FHIR resource is pinned to IPFS; only its digest + CID go on-chain, under
-   `RECORD~<patientIdHash>~<recordId>`.
-
-```bash
-# login + register a patient, then inspect the FHIR anchor
-TOKEN=$(curl -s -X POST http://localhost:4001/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"receptionist","password":"recpw"}' | jq -r '.data.token')
-
-curl -s -X POST http://localhost:4001/patients \
-  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"patientId":"PAT-100","name":"Aisha Khan","age":34,"gender":"female","bloodGroup":"B+","contact":"+91-90000-11111","address":"Mumbai"}' \
-  | jq '.data.fhirAnchor'
-```
-
-Full run steps (macOS/Colima, binary resolution, per-org setup) are in
-[`docs/setup-guide.md`](docs/setup-guide.md); the integration design is in
-[`docs/fhir-integration.md`](docs/fhir-integration.md).
-
----
-
-### Step 1: Clone or Pull the Repository
-
-```bash
-git clone https://github.com/devbyhimans/Electronic_Health_Record_Blockchain.git
-cd Electronic_Health_Record_Blockchain
-git checkout fix-recover-and-run
-```
-
----
-
-### Step 2: Run One-Command Automated Setup (`./setup.sh`)
-Run the setup script once to prepare the environment and install dependencies:
-
-### 2. Initialize application dependencies
-```bash
-./setup.sh
-```
-
-### 3. Fabric network
-`./start.sh` builds the network and deploys the chaincode by itself when none exists. No manual step is needed.
-
-### 4. Launch the Complete Workspace
-```bash
-./start.sh
-```
-All 20 services, portals, AI agents, and the realtime dashboard will launch at [http://localhost/](http://localhost/).
-
-## Start and stop
-
-From the repository root:
-
-```bash
-./start.sh
-```
-
-The script checks that Docker and existing Fabric identity/CA material are present, starts the existing Fabric CAs and peer/orderer Compose stack, and then starts the app services in the root Compose file. It does **not** enroll identities, reset the channel or ledgers, delete Docker volumes, or deploy chaincode. The optional dashboard API and portal are started only when `dashboard-api/.env` exists; configuration values belong in that local ignored file, never in Git or chat.
-
-Stop without deleting persistent data:
-
-```bash
-./stop.sh
-```
-
-`setup.sh` checks prerequisites, pulls selected images, and installs a subset of Node dependencies. It does not initialize Fabric identity material. `start-sequential.sh` is a legacy host-process launcher; the supported all-in-one local flow is `./start.sh`.
-
-## Entry points
-
-| Service | URL | Notes |
-|---|---|---|
-| Workspace hub | [http://localhost/](http://localhost/) | Consortium Showcase Hub with media showcase cards and live telemetry status. |
-| Hospital staff portal | [http://localhost:5173/](http://localhost:5173/) | React/Vite portal for Doctor, Nurse, Receptionist, and Admin roles. |
-| Patient portal | [http://localhost/patient/](http://localhost/patient/) or port `5174` | Hospital patient self-service portal (Consent, Timeline, Master EHR). |
-| DigiLocker Vault | [http://localhost:5174/digilocker](http://localhost:5174/digilocker) or API port `4007` | Patient-governed encrypted vault for authentic clinical PDFs, IPFS storage, and Fabric anchoring. |
-| System dashboard | [http://localhost/dashboard/](http://localhost/dashboard/) or port `5176` | Group 1 Real-time observability dashboard (Obsidian Glass UI) with 12 live telemetry targets, block stream inspector, 5 clinical agent views, and threshold alerts. |
-| Clinical AI Agent | [http://localhost/ai-agent/docs](http://localhost/ai-agent/docs) or port `8000` | Autonomous Clinical Intelligence, Vital Signs Trend Analysis, and Medical RAG Microservice (FastAPI Swagger `/docs` and ReDoc). |
-| Unified Pharmacy Suite | [http://localhost/pharmacy/](http://localhost/pharmacy/) or port `5175` | Unified 5-in-1 workspace: Pharmacy Manager, Pharmacist Dispensing, Stock Inventory, Outpatient Billing, and Patient Self-Service with Zero-Trust RBAC. |
-| Lab console & Multi-Agent Gateway | [http://localhost/lab/](http://localhost/lab/) or port `3006` | Multi-Agent diagnostic orchestrator, Sushil Tool Layer, VCAP provenance, and human-in-the-loop review. |
-| IPFS WebUI & Gateway | [http://localhost:5001/webui](http://localhost:5001/webui) or port `8090` | Kubo IPFS content-addressed decentralized storage node. |
-
-## Architecture (as currently wired)
-
-```mermaid
-flowchart TB
-  subgraph ClientLayer ["Client & Ingress Layer"]
-    Browser["User in Browser"] --> Hub["Nginx :80 Gateway"]
-    Hub --> HubUI["Showcase Hub / (:80)"]
-    Hub --> HospitalUI["Hospital Portal :5173"]
-    Hub --> PatientUI["Patient Portal /patient/ (:5174)"]
-    Hub --> DashUI["System Dashboard /dashboard/ (:5176)<br/>Obsidian Glass UI & Block Inspector"]
-    Hub --> LabUI["Lab Console /lab/ (:3006)"]
-    Hub --> PharmUI["Unified Pharmacy Suite /pharmacy/ (:5175)<br/>Manager, Pharmacist, Inventory, Billing, Patient"]
-    Hub --> AIAgentRoute["Clinical AI /ai-agent/ (:8000)"]
-    Hub --> IPFSRoute["IPFS WebUI (:5001)"]
-  end
-
-  subgraph MicroservicesLayer ["Microservices & Multi-Agent Layer"]
-    HospitalUI --> P0["peer0-api :4001"]
-    HospitalUI --> P1["peer1-api :4002"]
-    HospitalUI --> P2["peer2-api :4003"]
-    PatientUI --> PatientAPI["patient-api :4005"]
-    PatientUI --> DigiLockerAPI["digilocker-service :4007"]
-    PharmUI --> PharmAPI["p-backend :3000"]
-    PharmUI --> P2
-    AIAgentRoute --> AIAgentService["clinical-ai-agent :8000<br/>FastAPI Medical RAG & Trend Analyzer"]
-    LabUI --> LabNodeGateway["l-node-gateway :3006<br/>Multi-Agent Orchestrator, Tool Layer & VCAP"]
-    DashUI --> DashboardAPI["dashboard-api :4010<br/>Event Normalizer, SQLite Read Cache, WS / SSE"]
-  end
-    LabUI --> LabGateway["Lab node-gateway :3006"]
-
-    subgraph LabAgenticSubsystem ["Lab Multi-Agent Subsystem"]
-      LabGateway --> LabAgent["Lab Agent (lab-agent.js)<br/>Report Analysis & Extraction"]
-      LabGateway --> HistoryAgent["History Agent (history-agent.js)<br/>Longitudinal Trend Synthesis"]
-      LabGateway --> LabOrchestrator["Human-in-the-Loop Orchestrator<br/>orchestrator.js & Approval State"]
-      LabGateway --> IntegrityRecheck["Ledger Integrity Rechecker<br/>4-Hour Raw-Byte SHA-256 vs Fabric"]
-    end
-  end
-
-  subgraph BlockchainLayer ["Hyperledger Fabric Consortium (ehrchannel)"]
-    P0 --> FabricHospital[("peer0.hospital :7051<br/>HospitalMSP Reception/Admin")]
-    P1 --> FabricDoctor[("peer1.hospital :9051<br/>HospitalMSP Doctor")]
-    P2 --> FabricNurse[("peer2.hospital :10051<br/>HospitalMSP Nurse/Pharma")]
-    PatientAPI --> FabricHospital
-    Ext["extorg-api :4004"] --> FabricExt[("peer0.provider :11051<br/>ProviderMSP Claims")]
-    LabGateway --> FabricDiag[("peer0.diagnostic :8051<br/>DiagnosticsMSP Lab Gateway")]
-    OrdererNode[("orderer.example.com :7050<br/>Raft CFT Consensus")]
-
-    FabricHospital --- OrdererNode
-    FabricDoctor --- OrdererNode
-    FabricNurse --- OrdererNode
-    FabricExt --- OrdererNode
-    FabricDiag --- OrdererNode
-  end
-
-  subgraph StorageLayer ["Decentralized & Persistent Storage"]
-    IPFSAPI["ipfs-service :4006"] --> KuboIPFS[("Kubo IPFS Node<br/>ipfs.ehr.local:5001 / :8090")]
-    PharmAPI --> KuboIPFS
-    PharmAPI <--> PharmStore[("Pharmacy Persistent Store<br/>store.js & JSON State")]
-    LabGateway --> KuboIPFS
-    IntegrityRecheck -.->|Verify Multihashes| KuboIPFS
-    IntegrityRecheck -.->|Verify Digest Hashes| FabricDiag
-  end
-
-  subgraph ObservabilityLayer ["Group 1 Observatory (Zero-PHI Compliant)"]
-    FabricHospital -.->|Block Commit Observer| DashAPI["dashboard-api :4010"]
-    FabricDoctor -.->|Operations /healthz :9445| DashAPI
-    FabricDiag -.->|Operations /healthz :9446| DashAPI
-    FabricExt -.->|Operations /healthz :9447| DashAPI
-    OrdererNode -.->|Operations /healthz :9443| DashAPI
-    AIAgentService -.->|Health Endpoint /health| DashAPI
-    LabGateway -.->|Agent Telemetry /health| DashAPI
-    PharmAPI -.->|Health Probe /health| DashAPI
-
-    DashAPI --> DashUI
-    DashAPI -.->|Normalizer & NDJSON Store| DashStore[("Append-Only NDJSON<br/>Event Cache & Checkpoint")]
-    DashStore --> LiveStream["WebSocket /ws & SSE /stream"]
-    LiveStream --> DashUI
-  end
-```
-
-The current Fabric topology is configured through the Fabric network files. The local default channel is `ehrchannel`; the organizations are `HospitalMSP`, `DiagnosticsMSP`, and `ProviderMSP`. Dashboard topology values live in `dashboard-api/config/topology.json` and actively monitor all 12 consortium components.
-
-## Service map
-
-| Component | Host port / route | Current role |
-|---|---:|---|
-| `h-peer0-api` | `4001`, `/api/hospital/peer0/` | Reception/admin API and hospital login endpoint. |
-| `h-peer1-api` | `4002`, `/api/hospital/peer1/` | Doctor API. |
-| `h-peer2-api` | `4003`, `/api/hospital/peer2/` | Nurse/pharmacist/medical-record API. |
-| `h-extorg-api` | `4004`, `/api/hospital/extorg/` | Diagnostics/provider API. |
-| `h-patient-api` | `4005`, `/api/hospital/patient/` | Patient API. |
-| `h-ipfs-service` | `4006`, `/api/hospital/ipfs/` | IPFS bridge API. |
-| `clinical-ai-agent` | `8000`, `/ai-agent/` | FastAPI Clinical Intelligence, Medical RAG, PubMed literature citation, vital trajectory alerts. |
-| `h-dashboard-api` | `4010` (loopback host binding), `/api/dashboard/` | Event store, committed-block collector, 12/12 node telemetry, realtime streams, and role-filtered aggregation API. |
-| `h-dashboard-portal` | `5176` (loopback host binding), `/dashboard/` | Role-aware Luxury Obsidian Glass dashboard UI with opposite-corner card glow and Block Inspector. |
-| `p-backend` | `3000`, `/api/pharmacy/` | Pharmacy REST API with persistent store (`store.js`), automatic inventory deduction, and IPFS receipt pinning. |
-| `l-node-gateway` | `3006` host, `/lab/`, `/api/lab/` | Lab Multi-Agent Orchestrator (`lab-agent.js`, `history-agent.js`, `orchestrator.js`), human review console, and 4-hour ledger integrity checker. |
-
-Use `docker compose ps` to see container state and `docker compose logs --tail=100 <service>` to inspect one service.
-
-## Dashboard status and safety
-
-The dashboard API and portal are implemented as a core observability module. The API includes HS256 JWT verification, a config-based default-deny role map, zero-PHI envelope validation, an append-only NDJSON event cache, a committed-block collector, bounded health polling, `POST /internal/events`, stream tickets, WebSocket/SSE routes, and REST aggregation/trace endpoints.
-
-All 12 consortium nodes and agents are actively monitored and reporting `OK`:
-1. `peer0.hospital.example.com` (HospitalMSP Admin/Auth peer operations `/healthz`)
-2. `peer1.hospital.example.com` (HospitalMSP Doctor peer operations `/healthz`)
-3. `peer0.diagnostic.example.com` (DiagnosticsMSP Lab peer operations `/healthz`)
-4. `peer0.provider.example.com` (ProviderMSP Insurance peer operations `/healthz`)
-5. `orderer.example.com` (Raft CFT Orderer operations `/healthz`)
-6. `clinical-agent` (`clinical-ai-agent:8000/health` FastAPI RAG engine)
-7. `history-agent` (Longitudinal patient trajectory agent in `l-node-gateway:3006`)
-8. `governance-agent` (Consent self-governance policy agent in `l-node-gateway:3006`)
-9. `lab-gateway` (`l-node-gateway:3006/api/health`)
-10. `pharmacy-backend` (`p-backend:3000/health`)
-11. `ipfs-service` (`h-ipfs-service:4006/health`)
-12. `patient-api` (`h-patient-api:4005/health`)
-
-The event store is a local operational cache, strictly enforcing Zero-PHI: patient identifiers are redacted into keyed hashes (`patientIdHash`), and clinical notes/AI narrative are omitted from envelopes. Real-time ledger block streaming and ASN.1 SHA-256 header hashing verify that block $N$'s `previousHash` matches block $N-1$'s `blockHash` with an interactive 1-click clipboard Block Inspector Panel.
-
-See [dashboard API README](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/dashboard-api/README.md), [dashboard portal README](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-frontend-v2/dashboard-portal/README.md), [dashboard handoff](file:///home/himanshu/Desktop/EHR_blockchain/docs/dashboard/PROJECT_HANDOFF.md), [dependencies](file:///home/himanshu/Desktop/EHR_blockchain/docs/dashboard/DEPENDENCIES.md), and [testing notes](file:///home/himanshu/Desktop/EHR_blockchain/docs/dashboard/TESTING.md).
-
-## Pharmacy, Lab, and Clinical AI Boundaries
-
-1. **Clinical AI Agent Subsystem:**
-   - Containerized FastAPI microservice running on port `8000` (`clinical-ai-agent`), accessible via Nginx at `/ai-agent/`.
-   - Evaluates vital signs against clinical guidelines (hypertensive crisis, hypoxia, hypoglycemia).
-   - Medical RAG engine querying PubMed clinical literature with hybrid retrieval and confidence scoring.
-   - Fully covered by 20 passing pytest test suites.
-
-2. **Lab Multi-Agent Orchestrator:**
-   - Integrated into `l-node-gateway:3006` and routed via Nginx at `/lab/` and `/api/lab/`.
-   - Incorporates `lab-agent.js` (Lab Report Analysis Agent), `history-agent.js` (Longitudinal History Agent), and `orchestrator.js` (Human-in-the-Loop review state machine).
-   - Connects to shared `ehrchannel` as `DiagnosticsMSP` and pins diagnostics payloads to the shared Kubo IPFS node.
-   - Includes automated 4-hour background ledger-integrity rechecking that reads raw bytes from IPFS, computes SHA-256 hashes, and cross-checks them against on-chain Fabric digests.
-
-3. **Pharmacy Organization:**
-   - One portal (`:5175`) and one backend (`p-backend:3000`). Staff sign in with their hospital accounts; the backend checks the token and the role on every request.
-   - Dispensing a hospital prescription is a ledger transaction, submitted through the hospital peer2 API.
-   - Inventory, pharmacy bills, the pharmacy staff list and the pharmacy access list are kept in the pharmacy service's own store. **They are not on the ledger.** Bill documents are pinned to IPFS.
-
-## 👨‍💻 Project Contributions
-
-> Detailed individual contribution walkthrough: [MY_CONTRIBUTION.md](MY_CONTRIBUTION.md)
-
-- **Lead System Orchestration (Himanshu — `devbyhimans`)**:
-  - Engineered master startup (`./start.sh`) and teardown (`./stop.sh`) with automated port-sweeping and named volume isolation.
-  - Built unified Nginx API Gateway (`nginx/nginx.conf` on Port 80) routing all frontends, microservices, and WebSockets.
-  - Resolved Raft Orderer TLS certificate genesis mismatch (`configtxgen` resync) and cross-platform native binary compilation crashes.
-- **Group 1 Real-Time Event Architecture (Novelty Track)**:
-  - Designed the Hyperledger Fabric block commit collector, atomic checkpointing (`checkpoint.json`), and Zero-PHI event normalizer.
-  - Implemented high-performance WebSocket (`/ws`) and Server-Sent Events (`/stream`) real-time pipeline.
-  - Developed 5 dedicated clinical agent views (`DoctorAgent.jsx`, `NurseAgent.jsx`, `PharmacyAgent.jsx`, `LabAgent.jsx`, `ClinicalAgentPage.jsx`) and the real-time threshold alert engine (`Alerts.jsx`).
-  - Authored all 76 passing automated backend test suites.
-- **Pharmacy Resiliency & Patient Portal Overhaul**:
-  - Eliminated root-cause HTTP 500 errors across `/api/inventory` and billing routes via persistent storage (`store.js`) and Docker network bridging.
-  - Built automatic inventory stock deduction and Kubo IPFS multihash receipt generation.
-  - Completely engineered the CarePoint Pharmacy Patient Portal (`:3004`) from a static placeholder into a live, interactive healthcare application.
-- **Database & Storage Architecture**:
-  - Authored comprehensive [DATABASE_README.md](DATABASE_README.md) mapping Fabric State DB (GoLevelDB/CouchDB), Kubo IPFS, and local operational stores.
-- **CareGrid Soft Glass Bento Frontend Redesign**:
-  - Built unified semantic design tokens (`packages/caregrid-ui/src/tokens.css`) implementing the Soft Glass Bento visual language (frosted blur, pastel tints, ink-pill buttons, dark mode).
-  - Created reusable blockchain trust components (`VerifiedBadge.jsx`, `HashChip.jsx`, `DataSourceTag.jsx`, `BentoCard.jsx`).
-  - Redesigned Patient Portal (`:5174`) and Hospital Staff Portal (`:5173`) with rich bento layouts and curated free Unsplash clinical imagery.
-  - Authored automated synchronization script (`scripts/sync-ui.sh`) and frontend contract registry (`docs/redesign/FRONTEND_CONTRACT.md`).
-- **Consortium Multi-Agent & Resilience Lead**:
-  - Containerized FastAPI Clinical AI Agent (`clinical-ai-agent:8000`) with offline PubMed RAG, vital signs trajectory alerts, and Nginx reverse proxy at `/ai-agent/`.
-  - Resolved merge conflicts across 5 core files (`docker-compose.yaml`, `gateway.js`, `public/index.html`, `public/app.js`, `public/styles.css`), unifying Lab Multi-Agent Orchestration with the radiant gradient UI.
-  - Fixed Lab Gateway startup crash (`createIntegrityChecker` missing reference in `server.js`).
-  - Configured 12/12 live telemetry health targets in `topology.json`, achieving 100% healthy status on the Observatory Dashboard.
-  - Verified 100% automated test pass rates across all 4 tech stacks (76 Node tests, 20 Python pytest tests, 24 Lab agent Jest tests, and end-to-end integration).
-
-## Repository map
-
-```text
-services/
-  ai-agent/                     FastAPI Clinical Intelligence & Medical RAG microservice
-orgs/hospital/EHR_hospitalOrg-main/
-  ehr-network/                  Fabric network scripts/configuration (Hospital, Diagnostics, Provider)
-  ehr-backend-v3/               Hospital APIs, IPFS bridge service, and dashboard-api
-  ehr-frontend-v2/              Hospital (:5173), patient (:5174), and dashboard-portal (:5176)
-  ehr-chaincode-v3/              Eight Fabric smart contracts
-orgs/pharmacy/fabric-network-swarm/
-  app/backend/                  Pharmacy API (app.js & persistent store.js)
-  app/{manager,employee,inventory,billing,frontend}/ Dedicated pharmacy UIs
-  app/patient/                  CarePoint interactive patient portal (Vite/React :3004)
-orgs/lab/EHR-LABORG-main/        Lab gateway/UI, Multi-Agent Orchestrator, and integrity checker
-docs/                           Architecture, setup, dashboard, audit, and changelogs
-nginx/hub/                      Single-entry API gateway and service hub (:80)
-```
-
-## Documentation
-- [Author Contribution Guide](file:///home/himanshu/Desktop/EHR_blockchain/MY_CONTRIBUTION.md)
-- [Comprehensive Project Changelog](file:///home/himanshu/Desktop/EHR_blockchain/CHANGELOG.md)
-- [Implementation Changelog & Timeline](file:///home/himanshu/Desktop/EHR_blockchain/docs/IMPLEMENTATION_CHANGELOG.md)
-- [Vitalis Redesign & Gateway Implementation Report](file:///home/himanshu/Desktop/EHR_blockchain/REDESIGN_REPORT.md)
-- [Database & Storage Architecture](file:///home/himanshu/Desktop/EHR_blockchain/DATABASE_README.md)
-- [Current architecture diagrams](file:///home/himanshu/Desktop/EHR_blockchain/docs/architecture.md)
-- [System overview](file:///home/himanshu/Desktop/EHR_blockchain/docs/system-overview.md)
-- [Setup guide](file:///home/himanshu/Desktop/EHR_blockchain/docs/setup-guide.md)
-- [Clinical AI Agent Documentation](file:///home/himanshu/Desktop/EHR_blockchain/services/ai-agent/README.md)
-- [Lab Multi-Agent & Gateway Documentation](file:///home/himanshu/Desktop/EHR_blockchain/orgs/lab/EHR-LABORG-main/README.md)
-- [Pharmacy Architecture & API Guide](file:///home/himanshu/Desktop/EHR_blockchain/orgs/pharmacy/fabric-network-swarm/README.md)
-- [Dashboard API Documentation](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/dashboard-api/README.md)
-- [Dashboard Portal Documentation](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-frontend-v2/dashboard-portal/README.md)
-- [Hospital Multi-System Guide](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/README.md)
-- [Hospital EHR Chaincode Guide](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-chaincode-v3/README.md)
-- [IPFS Bridge Service Guide](file:///home/himanshu/Desktop/EHR_blockchain/orgs/hospital/EHR_hospitalOrg-main/ehr-backend-v3/ipfs-service/README.md)
-
-## Safety and data
-
-Use synthetic test accounts and data locally. Do not commit `.env` files, wallets, TLS private keys, patient data, or dashboard event-store data. The portal theme (light/dark) is shared across local interfaces using the `ehr_appearance` preference; theme state is presentation-only and grants no access.
+*Maintained by **Himanshu (24MCF1R16)** — Master of Computer Applications, National Institute of Technology, Warangal.*

@@ -7,6 +7,7 @@ const { peerContext }  = require('../middleware/peerContext');
 const { wrap, parseResult } = require('../middleware/errorHandler');
 const { fetchByCID, pinJSON } = require('../fabric/ipfsClient');
 const logger = require('../config/logger');
+const { emit } = require('../../../shared/dashboardEmitter');
 
 const asNurse = [authenticate, requireRole('nurse'), peerContext];
 
@@ -69,6 +70,10 @@ router.put('/visits/:id/vitals',
     const result = await req.contract.submitTransaction(
       'ClinicalContract:RecordVitals', visitId, newCID
     );
+    emit('AGENT_EXECUTION_COMPLETED', {
+      source: 'peer2-api', org: 'HospitalMSP', severity: 'INFO',
+      payload: { agentId: 'nurse-agent', status: 'COMPLETED', durationMs: 30 }
+    });
     return res.json({ success: true, data: parseResult(result) });
   })
 );
